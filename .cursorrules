@@ -1,0 +1,270 @@
+# Cursor Rules for React Native Notes App
+
+You are an expert React Native and TypeScript developer working on a Notes application. Follow these rules strictly.
+
+## Project Context
+
+- **Framework**: React Native 0.82.1 with TypeScript
+- **State Management**: Redux Toolkit
+- **Styling**: styled-components (React Native)
+- **Navigation**: React Navigation v7
+- **Storage**: MMKV (react-native-mmkv)
+
+## Code Style & Formatting
+
+- Use Prettier configuration: single quotes, trailing commas, no bracket spacing
+- Maximum line length: 100 characters (soft limit)
+- Always use TypeScript with strict typing
+- Use functional components with hooks (no class components)
+
+## Import/Export Rules
+
+### Path Aliases
+- **ALWAYS** use `@/` alias instead of relative paths
+- ✅ `import Component from '@/components/Component'`
+- ❌ `import Component from '../../components/Component'`
+
+### Import Order
+1. React and React Native
+2. Third-party libraries
+3. Internal imports (using `@/` alias)
+4. Types (with `type` keyword)
+
+### Export Patterns
+- Use named exports for multiple exports
+- Use default export for single main export
+- Re-export from index files
+
+## TypeScript Guidelines
+
+- **NEVER** use `any` type
+- Always define explicit types for function parameters and return values
+- Use `interface` for object shapes, `type` for unions/intersections
+- Export types alongside components/hooks
+- Use `as const` for literal types
+- Use `ReturnType` and `Parameters` utility types
+
+## Styled Components Rules
+
+### Transient Props
+- **ALWAYS** use `$` prefix for styled-components props
+- ✅ `$variant`, `$disabled`, `$secondary`
+- ❌ `variant`, `disabled`, `secondary` (causes React Native warnings)
+
+### Theme Integration
+- Always use `props.theme` for colors in styled components
+- Use `useTheme()` hook when needed outside styled components
+- Theme types are declared in `src/types/styled-components.d.ts`
+
+### Component Structure
+```typescript
+// ✅ Good pattern
+interface ComponentProps {
+  $variant?: 'primary' | 'secondary';
+}
+
+export const Component = styled.View<ComponentProps>`
+  background-color: ${props => props.theme.background};
+`;
+
+export default Component;
+```
+
+## React Native Patterns
+
+### Components
+- Use functional components with hooks
+- Keep components small and focused
+- Extract logic into custom hooks
+- Use `React.memo` for expensive components
+
+### Hooks
+- Prefix custom hooks with `use`
+- Return objects from hooks for flexibility
+- Use `useCallback` for functions passed as props
+- Use `useMemo` for expensive computations
+- Clean up subscriptions in `useEffect`
+
+### Performance
+- Use `React.memo` for components that re-render frequently
+- Use `useMemo` for expensive calculations
+- Use `useCallback` for functions in dependency arrays
+- Avoid inline object/array creation in render
+
+## Redux Patterns
+
+- Use `createSlice` from Redux Toolkit
+- Use `PayloadAction` for typed actions
+- Export action creators and reducer
+- Use typed hooks: `useAppDispatch`, `useAppSelector`
+- One slice per feature/domain
+
+```typescript
+// ✅ Good Redux pattern
+const slice = createSlice({
+  name: 'feature',
+  initialState,
+  reducers: {
+    setValue: (state, action: PayloadAction<string>) => {
+      state.value = action.payload;
+    },
+  },
+});
+```
+
+## File Organization
+
+### Component Structure
+```
+ComponentName/
+├── ComponentName.tsx
+└── index.ts
+```
+
+### Naming Conventions
+- **Files**: PascalCase for components (`Button.tsx`)
+- **Hooks**: camelCase with `use` prefix (`useThemeStore.ts`)
+- **Utils**: PascalCase (`StorageHelper.ts`)
+- **Components**: PascalCase (`const Button = ...`)
+- **Hooks**: camelCase with `use` (`const useThemeStore = ...`)
+- **Constants**: UPPER_SNAKE_CASE (`THEME_STORAGE_KEY`)
+
+## Accessibility
+
+- Add `accessibilityRole` to interactive elements
+- Use `accessibilityLabel` for screen readers
+- Set `accessibilityState` for component states
+- Test with screen readers
+
+```typescript
+// ✅ Good accessibility
+<Button
+  accessibilityRole="button"
+  accessibilityLabel="Save note"
+  accessibilityState={{disabled: isDisabled}}
+  onPress={handleSave}
+>
+  <ButtonText>Save</ButtonText>
+</Button>
+```
+
+## Error Handling
+
+- Use try-catch for async operations
+- Provide user-friendly error messages
+- Handle edge cases
+- Clean up subscriptions
+
+## Documentation
+
+- Add JSDoc comments for public APIs
+- Document complex logic
+- Use examples in documentation
+
+## Code Quality Checklist
+
+Before writing code, ensure:
+- [ ] TypeScript types are defined
+- [ ] Uses `@/` path aliases
+- [ ] Follows naming conventions
+- [ ] Styled components use `$` prefix for props
+- [ ] Components are properly exported
+- [ ] JSDoc comments for public APIs
+- [ ] No console.logs in production code
+- [ ] Accessibility props added where needed
+- [ ] Error handling implemented
+
+## Common Patterns
+
+### Creating a New Component
+```typescript
+import React from 'react';
+import styled from 'styled-components/native';
+import type {ThemeColors} from '@/util/themeColors';
+
+export interface ComponentProps {
+  $variant?: 'primary' | 'secondary';
+}
+
+/**
+ * Component description
+ * @example
+ * ```tsx
+ * <Component $variant="primary">Content</Component>
+ * ```
+ */
+export const Component = styled.View<ComponentProps>`
+  background-color: ${props => props.theme.background};
+`;
+
+export default Component;
+```
+
+### Creating a New Hook
+```typescript
+import {useCallback} from 'react';
+import {useAppDispatch} from '@/hooks/hooks';
+
+/**
+ * Hook description
+ * @returns Object with hook values
+ */
+export const useCustomHook = () => {
+  const dispatch = useAppDispatch();
+  
+  const handleAction = useCallback(() => {
+    // Implementation
+  }, [dispatch]);
+  
+  return {handleAction};
+};
+```
+
+### Creating a Redux Slice
+```typescript
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+
+interface State {
+  value: string;
+}
+
+const initialState: State = {
+  value: '',
+};
+
+const slice = createSlice({
+  name: 'feature',
+  initialState,
+  reducers: {
+    setValue: (state, action: PayloadAction<string>) => {
+      state.value = action.payload;
+    },
+  },
+});
+
+export const {setValue} = slice.actions;
+export default slice.reducer;
+```
+
+## What NOT to Do
+
+❌ Don't use relative paths (`../../components`)
+❌ Don't use `any` type
+❌ Don't use regular props in styled-components (use `$` prefix)
+❌ Don't create class components
+❌ Don't use inline styles (use styled-components)
+❌ Don't skip TypeScript types
+❌ Don't forget accessibility props
+❌ Don't leave console.logs in production code
+❌ Don't create components without JSDoc comments
+❌ Don't use implicit any
+
+## When in Doubt
+
+1. Check existing code patterns in the codebase
+2. Follow the examples in `vault/BEST_PRACTICES.md`
+3. Use TypeScript strictly
+4. Prioritize accessibility
+5. Write clean, readable code
+
+
