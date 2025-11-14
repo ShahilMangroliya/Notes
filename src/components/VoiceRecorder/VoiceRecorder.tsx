@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import IconButton from '@/components/IconButton';
+import {useTheme} from 'styled-components/native';
+import Icon from '@/components/Icon';
 
 /**
  * Props for VoiceRecorder component
@@ -51,7 +52,8 @@ const StatusDot = styled.View<{$active: boolean}>`
   width: 8px;
   height: 8px;
   border-radius: 4px;
-  background-color: ${props => (props.$active ? '#ff3b30' : '#34c759')};
+  background-color: ${props =>
+    props.$active ? props.theme.error : props.theme.success};
 `;
 
 const StatusText = styled.Text`
@@ -82,7 +84,7 @@ const PlaceholderText = styled.Text`
 
 const ErrorText = styled.Text`
   font-size: 12px;
-  color: #ff3b30;
+  color: ${props => props.theme.error};
 `;
 
 const ButtonRow = styled.View`
@@ -94,8 +96,9 @@ const ButtonRow = styled.View`
 const RecordButton = styled.TouchableOpacity<{$active: boolean}>`
   flex: 1;
   background-color: ${props =>
-    props.$active ? '#ff3b30' : props.theme.background};
-  border: 2px solid ${props => (props.$active ? '#ff3b30' : props.theme.border)};
+    props.$active ? props.theme.error : props.theme.background};
+  border: 2px solid
+    ${props => (props.$active ? props.theme.error : props.theme.border)};
   border-radius: 8px;
   padding: 12px;
   align-items: center;
@@ -104,20 +107,22 @@ const RecordButton = styled.TouchableOpacity<{$active: boolean}>`
   gap: 8px;
 `;
 
-const RecordIcon = styled.Text`
-  font-size: 20px;
-`;
+const IconContainer = styled.View``;
 
 const RecordLabel = styled.Text<{$active: boolean}>`
   font-size: 14px;
   font-weight: 600;
-  color: ${props => (props.$active ? '#fff' : props.theme.text)};
+  color: ${props => (props.$active ? props.theme.surface : props.theme.text)};
 `;
 
-const ActionButton = styled.TouchableOpacity<{$variant?: 'primary' | 'default'}>`
+const ActionButton = styled.TouchableOpacity<{
+  $variant?: 'primary' | 'default';
+}>`
   flex: 1;
   background-color: ${props =>
-    props.$variant === 'primary' ? props.theme.background : props.theme.surface};
+    props.$variant === 'primary'
+      ? props.theme.background
+      : props.theme.surface};
   border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   padding: 12px;
@@ -155,6 +160,8 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   onInsertText,
   error,
 }) => {
+  const theme = useTheme();
+
   return (
     <Container>
       <Header>
@@ -183,7 +190,13 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         accessibilityRole="button"
         accessibilityLabel={isListening ? 'Stop recording' : 'Start recording'}
       >
-        <RecordIcon>{isListening ? '⏹' : '🎤'}</RecordIcon>
+        <IconContainer>
+          <Icon
+            name={isListening ? 'pause-circle' : 'audio'}
+            size={20}
+            color={isListening ? theme.surface : theme.text}
+          />
+        </IconContainer>
         <RecordLabel $active={isListening}>
           {isListening ? 'Stop' : 'Record'}
         </RecordLabel>

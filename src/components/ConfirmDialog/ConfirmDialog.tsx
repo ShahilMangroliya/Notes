@@ -44,7 +44,7 @@ const StyledButton = styled(Button)<{$destructive?: boolean}>`
   ${props =>
     props.$destructive &&
     `
-    background-color: #FF3B30;
+    background-color: ${props.theme.error};
   `}
 `;
 

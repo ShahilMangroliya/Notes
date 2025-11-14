@@ -57,6 +57,7 @@ src/
 ### Type Safety
 
 ✅ **DO:**
+
 - Always define explicit types for function parameters and return values
 - Use `interface` for object shapes
 - Use `type` for unions, intersections, and aliases
@@ -76,6 +77,7 @@ export const Button: React.FC<ButtonProps> = ({$variant, $disabled}) => {
 ```
 
 ❌ **DON'T:**
+
 - Use `any` type
 - Use implicit `any`
 - Skip type definitions for props
@@ -106,6 +108,7 @@ export type AppDispatch = typeof store.dispatch;
 ### Component Structure
 
 ✅ **DO:**
+
 - Use functional components with hooks
 - Keep components small and focused
 - Extract logic into custom hooks
@@ -115,7 +118,7 @@ export type AppDispatch = typeof store.dispatch;
 // ✅ Good
 const Home: React.FC = () => {
   const {isDarkMode} = useThemeStore();
-  
+
   return (
     <SafeAreaContainer>
       <StyledText>Home</StyledText>
@@ -129,6 +132,7 @@ export default Home;
 ### Hooks Best Practices
 
 ✅ **DO:**
+
 - Prefix custom hooks with `use`
 - Return objects from hooks for flexibility
 - Use `useCallback` for functions passed as props
@@ -140,11 +144,14 @@ export default Home;
 export const useThemeStore = () => {
   const dispatch = useAppDispatch();
   const theme = useAppSelector(state => state.theme);
-  
-  const setTheme = useCallback((theme: ThemeMode) => {
-    dispatch(setThemeAction(theme));
-  }, [dispatch]);
-  
+
+  const setTheme = useCallback(
+    (theme: ThemeMode) => {
+      dispatch(setThemeAction(theme));
+    },
+    [dispatch],
+  );
+
   return {theme, setTheme};
 };
 ```
@@ -172,9 +179,10 @@ interface ButtonProps {
 }
 
 const Button = styled.TouchableOpacity<ButtonProps>`
-  background-color: ${props => 
-    props.$variant === 'primary' ? props.theme.background : props.theme.surface
-  };
+  background-color: ${props =>
+    props.$variant === 'primary'
+      ? props.theme.background
+      : props.theme.surface};
 `;
 ```
 
@@ -214,6 +222,47 @@ const MyComponent = () => {
 - Create index.ts for barrel exports
 - Document with JSDoc comments
 
+### Icon Usage
+
+✅ **DO:**
+
+- Use the `Icon` component from `@/components/Icon`
+- Use type-safe `AntDesignIconName` for icon names
+- Use theme colors for icon colors
+- Import icon names type when needed
+
+```typescript
+// ✅ Good - Type-safe icons
+import {Icon} from '@/components/Icon';
+import {useTheme} from 'styled-components/native';
+
+const theme = useTheme();
+<Icon name="arrow-left" size={24} color={theme.text} />
+<Icon name="search" size={18} color={theme.textSecondary} />
+```
+
+❌ **DON'T:**
+
+- Don't use emoji or text characters as icons
+- Don't use hardcoded icon names without type checking
+- Don't use styled Text components for icons
+
+```typescript
+// ❌ Bad - Using emoji
+<Text>←</Text>
+<Text>🔍</Text>
+
+// ❌ Bad - No type safety
+const iconName: string = 'home';  // No autocomplete/validation
+<Icon name={iconName} />
+```
+
+**Icon Resources:**
+
+- See `vault/ANTDESIGN_ICONS.md` for complete icon list
+- Use `AntDesignIconName` type for autocomplete
+- All icons are theme-aware and accessible
+
 ---
 
 ## State Management (Redux)
@@ -221,6 +270,7 @@ const MyComponent = () => {
 ### Redux Toolkit Patterns
 
 ✅ **DO:**
+
 - Use `createSlice` for reducers
 - Use `PayloadAction` for typed actions
 - Export action creators and reducer
@@ -390,7 +440,7 @@ export type {ButtonProps} from './Button';
 // ✅ Good - Functional component with hooks
 const Home: React.FC = () => {
   const {isDarkMode} = useThemeStore();
-  
+
   return (
     <SafeAreaContainer>
       <StyledText>Home</StyledText>
@@ -408,16 +458,19 @@ export default Home;
 ### Optimization Strategies
 
 1. **Memoization**
+
    - Use `React.memo` for expensive components
    - Use `useMemo` for expensive calculations
    - Use `useCallback` for functions in dependencies
 
 2. **List Rendering**
+
    - Use `FlatList` for long lists
    - Implement `keyExtractor` properly
    - Use `getItemLayout` when possible
 
 3. **Image Optimization**
+
    - Use appropriate image formats
    - Implement lazy loading
    - Cache images appropriately
@@ -434,6 +487,7 @@ export default Home;
 ### Best Practices
 
 ✅ **DO:**
+
 - Add `accessibilityRole` to interactive elements
 - Use `accessibilityLabel` for screen readers
 - Set `accessibilityState` for component states
@@ -478,7 +532,7 @@ describe('Button', () => {
     const {getByText} = render(<Button>Click me</Button>);
     expect(getByText('Click me')).toBeTruthy();
   });
-  
+
   it('handles press events', () => {
     const onPress = jest.fn();
     const {getByText} = render(<Button onPress={onPress}>Click</Button>);
@@ -550,6 +604,4 @@ Before submitting code, ensure:
 
 ---
 
-*Last updated: 2024*
-
-
+_Last updated: 2024_

@@ -29,19 +29,19 @@ export interface CardProps {
  */
 export const Card = styled.View<CardProps>`
   background-color: ${props => props.theme.surface};
-  border-radius: ${props => props.$radius || 12}px;
-  padding: ${props => (props.$padding !== undefined ? props.$padding : 16)}px;
+  border-radius: ${props => props.$radius || 16}px;
+  padding: ${props => (props.$padding !== undefined ? props.$padding : 20)}px;
   margin: ${props => (props.$margin !== undefined ? props.$margin : 8)}px;
-  border: 1px solid ${props => props.theme.border};
   ${props =>
-    props.$elevated &&
-    `
+    props.$elevated
+      ? `
     shadow-color: #000;
-    shadow-offset: 0px 2px;
-    shadow-opacity: 0.1;
-    shadow-radius: 4px;
-    elevation: 3;
-  `}
+    shadow-offset: 0px 1px;
+    shadow-opacity: 0.05;
+    shadow-radius: 8px;
+    elevation: 2;
+  `
+      : ''}
 `;
 
 export default Card;

@@ -1,9 +1,11 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {ScrollView, Alert} from 'react-native';
+import {useTheme} from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import DrawingToolbar from '@/components/DrawingToolbar';
 import DrawingCanvas from '@/components/DrawingCanvas';
 import IconButton from '@/components/IconButton';
+import Icon from '@/components/Icon';
 import {createDrawingNote} from '@/util/NoteHelper';
 import {useAppDispatch} from '@/hooks/hooks';
 import {setCurrentNote, saveNote} from '@/redux/notesSlice';
@@ -18,6 +20,7 @@ import * as S from './styles';
 const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   const dispatch = useAppDispatch();
   const {noteId, noteType} = route.params;
+  const theme = useTheme();
 
   const {
     currentNote,
@@ -66,7 +69,11 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
         'Unsaved Changes',
         'You have unsaved changes. Do you want to save before leaving?',
         [
-          {text: 'Discard', style: 'destructive', onPress: () => navigation.goBack()},
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => navigation.goBack(),
+          },
           {text: 'Cancel', style: 'cancel'},
           {
             text: 'Save',
@@ -120,7 +127,7 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
         <S.Header>
           <S.HeaderLeft>
             <IconButton onPress={handleBack} accessibilityLabel="Go back">
-              <S.BackButton>←</S.BackButton>
+              <Icon name="arrow-left" size={24} color={theme.text} />
             </IconButton>
             <S.HeaderTitle>Drawing</S.HeaderTitle>
             {isDirty && <S.DirtyIndicator />}

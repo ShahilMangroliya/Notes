@@ -1,43 +1,44 @@
 import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {Alert, Platform, Keyboard} from 'react-native';
+import {Alert} from 'react-native';
 import {useTheme} from 'styled-components/native';
-import {RichEditor} from 'react-native-pell-rich-editor';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
-import InlineRichTextEditor from '@/components/InlineRichTextEditor';
-import InlineFormattingToolbar from '@/components/InlineFormattingToolbar';
+import FormattingToolbar from '@/components/FormattingToolbar';
+import RichTextEditor from '@/components/RichTextEditor';
 import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
 import {createTextNote} from '@/util/NoteHelper';
 import {useAppDispatch, useAppSelector} from '@/hooks/hooks';
 import {setCurrentNote, saveNote} from '@/redux/notesSlice';
+import useRichTextEditor from '@/hooks/useRichTextEditor';
 import type {NoteEditorScreenProps} from '@/types/navigation';
 import logger from '@/util/DebugLogger';
 import * as S from './styles';
 
 /**
- * CreateNote - Text editor screen with inline rich text editing
- *
- * Features:
- * - Inline rich text editing (WYSIWYG)
- * - No Edit/Preview mode - see formatting as you type
- * - Works like Google Docs, Word, Samsung Notes
- * - Formatting toolbar always accessible
+ * Text Editor screen for creating and editing text notes
  */
 const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   const dispatch = useAppDispatch();
   const {noteId, noteType} = route.params;
   const isInitializedRef = useRef(false);
-  const editorRef = useRef<RichEditor>(null);
   const theme = useTheme();
 
   logger.component('CreateNote', 'render', {noteId, noteType});
 
+  const {
+    text,
+    formattingRanges,
+    selection,
+    currentFormatting,
+    updateText,
+    handleSelectionChange,
+    toggleFormatting,
+    changeFontSize,
+  } = useRichTextEditor();
+
   const currentNote = useAppSelector(state => state.notes.currentNote);
   const isDirty = useAppSelector(state => state.editor.isDirty);
   const [title, setTitle] = useState('');
-  const [htmlContent, setHtmlContent] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [isTitleFocused, setIsTitleFocused] = useState(false);
 
   // Initialize note - only run once per mount
   useEffect(() => {
@@ -73,7 +74,7 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
       isInitializedRef.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noteId, noteType, dispatch]);
+  }, [noteId, noteType, dispatch]); // currentNote intentionally excluded to prevent loop - handled separately below
 
   // Handle currentNote changes for existing notes (after it's loaded)
   useEffect(() => {
@@ -96,42 +97,8 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     if (currentNote) {
       logger.effect('CreateNote', 'sync-title', {title: currentNote.title});
       setTitle(currentNote.title);
-
-      // Load HTML content from note
-      // For now, use text as HTML (we'll need to convert between formats)
-      if (currentNote.type === 'text') {
-        const content = currentNote.content as any;
-        const html = content.html || content.text || '';
-        setHtmlContent(html);
-      }
     }
   }, [currentNote]);
-
-  // Keyboard listeners
-  useEffect(() => {
-    const keyboardWillShow = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      e => {
-        logger.effect('CreateNote', 'keyboard-show', {
-          height: e.endCoordinates.height,
-        });
-        setKeyboardHeight(e.endCoordinates.height);
-      },
-    );
-
-    const keyboardWillHide = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        logger.effect('CreateNote', 'keyboard-hide');
-        setKeyboardHeight(0);
-      },
-    );
-
-    return () => {
-      keyboardWillShow.remove();
-      keyboardWillHide.remove();
-    };
-  }, []);
 
   const handleBack = useCallback(() => {
     logger.callback('CreateNote', 'handleBack', {isDirty});
@@ -154,17 +121,7 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
             onPress: async () => {
               logger.callback('CreateNote', 'handleBack.save');
               if (currentNote) {
-                // Save HTML content
-                const updatedNote = {
-                  ...currentNote,
-                  title,
-                  content: {
-                    ...(currentNote.content as any),
-                    html: htmlContent,
-                    text: htmlContent, // Also store as text for now
-                  },
-                };
-                await dispatch(saveNote(updatedNote));
+                await dispatch(saveNote({...currentNote, title}));
                 navigation.goBack();
               }
             },
@@ -174,7 +131,7 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     } else {
       navigation.goBack();
     }
-  }, [isDirty, currentNote, title, htmlContent, navigation, dispatch]);
+  }, [isDirty, currentNote, title, navigation, dispatch]);
 
   const handleSave = useCallback(async () => {
     logger.callback('CreateNote', 'handleSave', {
@@ -182,27 +139,34 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
       title,
     });
     if (currentNote) {
-      // Save HTML content
-      const updatedNote = {
-        ...currentNote,
-        title,
-        content: {
-          ...(currentNote.content as any),
-          html: htmlContent,
-          text: htmlContent, // Also store as text for now
-        },
-      };
-      await dispatch(saveNote(updatedNote));
+      await dispatch(saveNote({...currentNote, title}));
       Alert.alert('Saved', 'Note saved successfully');
     }
-  }, [currentNote, title, htmlContent, dispatch]);
+  }, [currentNote, title, dispatch]);
 
-  const handleContentChange = useCallback((html: string) => {
-    logger.callback('CreateNote', 'handleContentChange', {
-      length: html.length,
-    });
-    setHtmlContent(html);
-  }, []);
+  const handleToggleBold = useCallback(() => {
+    toggleFormatting('bold');
+  }, [toggleFormatting]);
+
+  const handleToggleItalic = useCallback(() => {
+    toggleFormatting('italic');
+  }, [toggleFormatting]);
+
+  const handleToggleUnderline = useCallback(() => {
+    toggleFormatting('underline');
+  }, [toggleFormatting]);
+
+  const handleToggleStrikethrough = useCallback(() => {
+    toggleFormatting('strikethrough');
+  }, [toggleFormatting]);
+
+  const handleIncreaseFontSize = useCallback(() => {
+    changeFontSize(2);
+  }, [changeFontSize]);
+
+  const handleDecreaseFontSize = useCallback(() => {
+    changeFontSize(-2);
+  }, [changeFontSize]);
 
   if (!currentNote || noteType !== 'text') {
     return (
@@ -229,7 +193,8 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
             <IconButton
               onPress={handleSave}
               $disabled={!isDirty}
-              accessibilityLabel="Save note">
+              accessibilityLabel="Save note"
+            >
               <S.SaveButton>Save</S.SaveButton>
             </IconButton>
           </S.HeaderRight>
@@ -240,25 +205,27 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           onChangeText={setTitle}
           placeholder="Note title"
           maxLength={200}
-          onFocus={() => setIsTitleFocused(true)}
-          onBlur={() => setIsTitleFocused(false)}
+        />
+
+        <FormattingToolbar
+          formatting={currentFormatting || {}}
+          onToggleBold={handleToggleBold}
+          onToggleItalic={handleToggleItalic}
+          onToggleUnderline={handleToggleUnderline}
+          onToggleStrikethrough={handleToggleStrikethrough}
+          onIncreaseFontSize={handleIncreaseFontSize}
+          onDecreaseFontSize={handleDecreaseFontSize}
         />
 
         <S.EditorContainer>
-          <InlineRichTextEditor
-            ref={editorRef}
-            initialContent={htmlContent}
-            onContentChange={handleContentChange}
+          <RichTextEditor
+            text={text}
+            formattingRanges={formattingRanges}
+            onTextChange={updateText}
+            onSelectionChange={handleSelectionChange}
             placeholder="Start typing..."
           />
         </S.EditorContainer>
-
-        {!isTitleFocused && (
-          <InlineFormattingToolbar
-            editorRef={editorRef}
-            keyboardHeight={keyboardHeight}
-          />
-        )}
       </S.Container>
     </SafeAreaContainer>
   );

@@ -1,7 +1,9 @@
 import React from 'react';
 import {ScrollView} from 'react-native';
 import styled from 'styled-components/native';
+import {useTheme} from 'styled-components/native';
 import IconButton from '@/components/IconButton';
+import Icon from '@/components/Icon';
 import Slider from '@/components/Slider';
 import ColorPicker from '@/components/ColorPicker';
 
@@ -74,9 +76,7 @@ const ToolButton = styled.TouchableOpacity<{$active: boolean}>`
   flex: 1;
 `;
 
-const ToolIcon = styled.Text`
-  font-size: 20px;
-`;
+const IconContainer = styled.View``;
 
 const ToolLabel = styled.Text<{$active: boolean}>`
   color: ${props => props.theme.text};
@@ -141,6 +141,8 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   canUndo = false,
   canRedo = false,
 }) => {
+  const theme = useTheme();
+
   return (
     <Container>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -155,7 +157,13 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
               accessibilityLabel="Pencil tool"
               accessibilityState={{selected: selectedTool === 'pencil'}}
             >
-              <ToolIcon>✏️</ToolIcon>
+              <IconContainer>
+                <Icon
+                  name="edit"
+                  size={20}
+                  color={selectedTool === 'pencil' ? theme.text : theme.text}
+                />
+              </IconContainer>
               <ToolLabel $active={selectedTool === 'pencil'}>Pencil</ToolLabel>
             </ToolButton>
 
@@ -166,7 +174,13 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
               accessibilityLabel="Eraser tool"
               accessibilityState={{selected: selectedTool === 'eraser'}}
             >
-              <ToolIcon>🧹</ToolIcon>
+              <IconContainer>
+                <Icon
+                  name="delete"
+                  size={20}
+                  color={selectedTool === 'eraser' ? theme.text : theme.text}
+                />
+              </IconContainer>
               <ToolLabel $active={selectedTool === 'eraser'}>Eraser</ToolLabel>
             </ToolButton>
           </ToolRow>
@@ -215,7 +229,11 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
                 accessibilityLabel="Undo"
                 $size="small"
               >
-                <ToolIcon>↶</ToolIcon>
+                <Icon
+                  name="undo"
+                  size={20}
+                  color={canUndo ? theme.text : theme.textSecondary}
+                />
               </IconButton>
             )}
 
@@ -226,7 +244,11 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
                 accessibilityLabel="Redo"
                 $size="small"
               >
-                <ToolIcon>↷</ToolIcon>
+                <Icon
+                  name="redo"
+                  size={20}
+                  color={canRedo ? theme.text : theme.textSecondary}
+                />
               </IconButton>
             )}
 
@@ -236,7 +258,7 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
                 accessibilityLabel="Clear canvas"
                 $size="small"
               >
-                <ToolIcon>🗑️</ToolIcon>
+                <Icon name="delete" size={20} color={theme.text} />
               </IconButton>
             )}
           </ToolRow>

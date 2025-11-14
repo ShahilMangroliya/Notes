@@ -16,20 +16,13 @@ export interface ValidationResult {
  * @returns New Note object with text content
  */
 export const createTextNote = (title: string): Note => {
-  const blockId = uuidv4();
   const noteId = uuidv4();
   const now = Date.now();
 
-  const initialBlock: TextBlock = {
-    id: blockId,
-    text: '',
-    formatting: {...DEFAULT_TEXT_FORMATTING},
-    blockType: 'paragraph',
-  };
-
   const content: TextContent = {
     type: 'text',
-    blocks: [initialBlock],
+    text: '', // Plain text content
+    formattingRanges: [], // Formatting ranges for selection-based formatting
     version: 1,
   };
 
@@ -116,7 +109,7 @@ export const validateNote = (note: Note): ValidationResult => {
     if (!textContent.blocks || textContent.blocks.length === 0) {
       errors.push('Text note must have at least one block');
     }
-    if (textContent.blocks.length > 1000) {
+    if (textContent.blocks && textContent.blocks.length > 1000) {
       errors.push('Text note cannot have more than 1000 blocks');
     }
   }

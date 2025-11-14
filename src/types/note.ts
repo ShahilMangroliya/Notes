@@ -14,11 +14,23 @@ export interface Note {
 }
 
 /**
+ * Text formatting range (for selection-based formatting)
+ */
+export interface FormattingRange {
+  start: number; // Start position in text
+  end: number; // End position in text
+  formatting: Partial<TextFormatting>; // Formatting to apply
+}
+
+/**
  * Text content structure for text notes
+ * Supports both block-based (legacy) and range-based (new) formatting
  */
 export interface TextContent {
   type: 'text';
-  blocks: TextBlock[]; // Array of text blocks
+  text: string; // Plain text content
+  formattingRanges?: FormattingRange[]; // Formatting applied to text ranges
+  blocks?: TextBlock[]; // Legacy: Array of text blocks (for backward compatibility)
   version: number; // Content version for undo/redo
 }
 
@@ -52,7 +64,7 @@ export interface TextFormatting {
   strikethrough: boolean;
   fontSize: number; // 12-32 (px)
   fontFamily: FontFamily;
-  color: string; // Hex color
+  color?: string; // Hex color (optional, defaults to theme text color)
   backgroundColor?: string; // Optional highlight color
 }
 
@@ -125,7 +137,7 @@ export const DEFAULT_TEXT_FORMATTING: TextFormatting = {
   strikethrough: false,
   fontSize: 16,
   fontFamily: 'system',
-  color: '#000000',
+  color: undefined, // Will use theme text color
   backgroundColor: undefined,
 };
 

@@ -20,23 +20,24 @@ export interface FormatButtonProps {
 const Button = styled.TouchableOpacity<{$active?: boolean; $disabled?: boolean}>`
   background-color: ${props =>
     props.$active ? props.theme.text : props.theme.surface};
-  border: 1px solid ${props => props.theme.border};
   border-radius: 6px;
   padding: 8px 12px;
   align-items: center;
   justify-content: center;
   opacity: ${props => (props.$disabled ? 0.4 : 1)};
   min-width: 40px;
+  min-height: 36px;
 `;
 
 const Content = styled.Text<{$active?: boolean}>`
   color: ${props => (props.$active ? props.theme.surface : props.theme.text)};
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: ${props => (props.$active ? '600' : '500')};
 `;
 
 /**
  * FormatButton component for text formatting actions
+ * Supports both text and icon children
  *
  * @example
  * ```tsx
@@ -45,7 +46,7 @@ const Content = styled.Text<{$active?: boolean}>`
  *   onPress={toggleBold}
  *   accessibilityLabel="Bold"
  * >
- *   B
+ *   <Icon name="bold" size={16} color={theme.text} />
  * </FormatButton>
  * ```
  */
@@ -56,6 +57,9 @@ export const FormatButton: React.FC<FormatButtonProps> = ({
   onPress,
   accessibilityLabel,
 }) => {
+  // Check if children is a string (text) or React element (icon)
+  const isText = typeof children === 'string';
+
   return (
     <Button
       $active={$active}
@@ -67,7 +71,11 @@ export const FormatButton: React.FC<FormatButtonProps> = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{selected: $active, disabled: $disabled}}
     >
-      <Content $active={$active}>{children}</Content>
+      {isText ? (
+        <Content $active={$active}>{children}</Content>
+      ) : (
+        children
+      )}
     </Button>
   );
 };

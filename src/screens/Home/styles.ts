@@ -5,18 +5,16 @@ export const Container = styled.View`
 `;
 
 export const Header = styled.View`
-  padding: 16px;
-  gap: 12px;
+  padding: 24px 20px 20px;
+  gap: 16px;
   background-color: ${props => props.theme.background};
-  border-bottom-width: 1px;
-  border-bottom-color: ${props => props.theme.border};
 `;
 
 export const Title = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: 700;
   color: ${props => props.theme.text};
-  margin-bottom: 8px;
+  letter-spacing: -0.5px;
 `;
 
 export const ListContainer = styled.View`
@@ -31,10 +29,7 @@ export const EmptyContainer = styled.View`
   padding: 40px;
 `;
 
-export const EmptyIcon = styled.Text`
-  font-size: 64px;
-  margin-bottom: 16px;
-`;
+// EmptyIcon removed - using Icon component directly
 
 export const EmptyTitle = styled.Text`
   font-size: 20px;
@@ -50,10 +45,7 @@ export const EmptySubtitle = styled.Text`
   text-align: center;
 `;
 
-export const CreateButton = styled.Text`
-  font-size: 40px;
-  color: ${props => props.theme.text};
-`;
+// CreateButton removed - using Icon component directly
 
 export const LoadingContainer = styled.View`
   flex: 1;
@@ -63,31 +55,33 @@ export const LoadingContainer = styled.View`
 
 export const ErrorContainer = styled.View`
   padding: 16px;
-  background-color: #ff3b3033;
-  margin: 16px;
-  border-radius: 8px;
+  background-color: ${props => props.theme.errorBackground};
+  margin: 20px;
+  border-radius: 12px;
 `;
 
 export const ErrorText = styled.Text`
-  color: #ff3b30;
+  color: ${props => props.theme.error};
   font-size: 14px;
   text-align: center;
 `;
 
 export const OptionButton = styled.TouchableOpacity`
-  background-color: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  background-color: ${props => props.theme.surface};
+  border-radius: 16px;
   padding: 20px;
   margin-bottom: 12px;
   flex-direction: row;
   align-items: center;
   gap: 16px;
+  shadow-color: #000;
+  shadow-offset: 0px 1px;
+  shadow-opacity: 0.03;
+  shadow-radius: 6px;
+  elevation: 1;
 `;
 
-export const OptionIcon = styled.Text`
-  font-size: 32px;
-`;
+// OptionIcon removed - using Icon component directly
 
 export const OptionContent = styled.View`
   flex: 1;

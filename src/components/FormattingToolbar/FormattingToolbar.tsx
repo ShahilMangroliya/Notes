@@ -1,7 +1,9 @@
 import React from 'react';
 import {ScrollView} from 'react-native';
 import styled from 'styled-components/native';
+import {useTheme} from 'styled-components/native';
 import FormatButton from '@/components/FormatButton';
+import Icon from '@/components/Icon';
 import type {TextFormatting} from '@/types/note';
 
 /**
@@ -9,7 +11,7 @@ import type {TextFormatting} from '@/types/note';
  */
 export interface FormattingToolbarProps {
   /** Current text formatting */
-  formatting: TextFormatting;
+  formatting: Partial<TextFormatting>;
   /** Toggle bold */
   onToggleBold: () => void;
   /** Toggle italic */
@@ -25,30 +27,31 @@ export interface FormattingToolbarProps {
 }
 
 const Container = styled.View`
-  background-color: ${props => props.theme.surface};
-  border-top-width: 1px;
-  border-bottom-width: 1px;
-  border-color: ${props => props.theme.border};
-  padding: 8px;
+  background-color: ${props => props.theme.background};
+  padding: 8px 12px;
+  border-top-width: 0.5px;
+  border-top-color: ${props => props.theme.border};
 `;
 
 const ButtonRow = styled.View`
   flex-direction: row;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 `;
 
 const Divider = styled.View`
   width: 1px;
-  height: 24px;
+  height: 20px;
   background-color: ${props => props.theme.border};
   margin: 0 4px;
+  opacity: 0.2;
 `;
 
 const FontSizeDisplay = styled.Text`
-  color: ${props => props.theme.textSecondary};
-  font-size: 12px;
-  min-width: 30px;
+  color: ${props => props.theme.text};
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 28px;
   text-align: center;
 `;
 
@@ -77,64 +80,91 @@ export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({
   onIncreaseFontSize,
   onDecreaseFontSize,
 }) => {
+  const theme = useTheme();
+
   return (
     <Container>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{paddingHorizontal: 4}}
       >
         <ButtonRow>
           <FormatButton
-            $active={formatting.bold}
+            $active={!!formatting.bold}
             onPress={onToggleBold}
             accessibilityLabel="Bold"
           >
-            B
+            <Icon
+              name="bold"
+              size={16}
+              color={formatting.bold ? theme.surface : theme.text}
+            />
           </FormatButton>
 
           <FormatButton
-            $active={formatting.italic}
+            $active={!!formatting.italic}
             onPress={onToggleItalic}
             accessibilityLabel="Italic"
           >
-            I
+            <Icon
+              name="italic"
+              size={16}
+              color={formatting.italic ? theme.surface : theme.text}
+            />
           </FormatButton>
 
           <FormatButton
-            $active={formatting.underline}
+            $active={!!formatting.underline}
             onPress={onToggleUnderline}
             accessibilityLabel="Underline"
           >
-            U
+            <Icon
+              name="underline"
+              size={16}
+              color={formatting.underline ? theme.surface : theme.text}
+            />
           </FormatButton>
 
           <FormatButton
-            $active={formatting.strikethrough}
+            $active={!!formatting.strikethrough}
             onPress={onToggleStrikethrough}
             accessibilityLabel="Strikethrough"
           >
-            S
+            <Icon
+              name="strikethrough"
+              size={16}
+              color={formatting.strikethrough ? theme.surface : theme.text}
+            />
           </FormatButton>
 
           <Divider />
 
           <FormatButton
             onPress={onDecreaseFontSize}
-            $disabled={formatting.fontSize <= 12}
+            $disabled={(formatting.fontSize || 16) <= 12}
             accessibilityLabel="Decrease font size"
           >
-            A-
+            <Icon
+              name="minus"
+              size={14}
+              color={(formatting.fontSize || 16) <= 12 ? theme.textSecondary : theme.text}
+            />
           </FormatButton>
 
-          <FontSizeDisplay>{formatting.fontSize}</FontSizeDisplay>
+          <FontSizeDisplay>{formatting.fontSize || 16}</FontSizeDisplay>
 
           <FormatButton
             onPress={onIncreaseFontSize}
-            $disabled={formatting.fontSize >= 32}
+            $disabled={(formatting.fontSize || 16) >= 32}
             accessibilityLabel="Increase font size"
           >
-            A+
+            <Icon
+              name="plus"
+              size={14}
+              color={(formatting.fontSize || 16) >= 32 ? theme.textSecondary : theme.text}
+            />
           </FormatButton>
         </ButtonRow>
       </ScrollView>

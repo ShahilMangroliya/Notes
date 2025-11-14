@@ -1,18 +1,18 @@
-import {useCallback, useEffect} from 'react';
+import {useCallback, useMemo} from 'react';
 import {useAppDispatch, useAppSelector} from './hooks';
 import {
   setSelectedBlockId,
   setTextFormatting,
   toggleTextFormatting,
-  resetTextFormatting,
   markDirty,
   markSaved,
   resetEditor,
 } from '@/redux/editorSlice';
-import {setCurrentNote, updateCurrentNote} from '@/redux/notesSlice';
+import {updateCurrentNote} from '@/redux/notesSlice';
 import {selectCurrentFormatting, selectIsDirty} from '@/redux/selectors';
 import {selectCurrentNote} from '@/redux/selectors';
 import {generateId} from '@/util/uuid';
+import logger from '@/util/DebugLogger';
 import type {TextBlock, BlockType, TextFormatting} from '@/types/note';
 
 /**
@@ -21,29 +21,71 @@ import type {TextBlock, BlockType, TextFormatting} from '@/types/note';
 export const useTextEditor = () => {
   const dispatch = useAppDispatch();
 
+  logger.hook('useTextEditor', 'render');
+
   const currentNote = useAppSelector(selectCurrentNote);
   const currentFormatting = useAppSelector(selectCurrentFormatting);
   const isDirty = useAppSelector(selectIsDirty);
+  const selectedBlockId = useAppSelector(
+    state => state.editor.textEditor.selectedBlockId,
+  );
+
+  logger.hook('useTextEditor', 'state', {
+    hasCurrentNote: !!currentNote,
+    noteId: currentNote?.id,
+    isDirty,
+  });
 
   // Get text blocks if current note is a text note
-  const textBlocks =
-    currentNote?.type === 'text'
-      ? (currentNote.content as {blocks: TextBlock[]}).blocks
-      : [];
+  const textBlocks = useMemo(
+    () =>
+      currentNote?.type === 'text'
+        ? (currentNote.content as {blocks: TextBlock[]}).blocks
+        : [],
+    [currentNote],
+  );
+
+  // Get formatting from selected block, or use global formatting
+  const selectedBlock = useMemo(
+    () => textBlocks.find(b => b.id === selectedBlockId),
+    [textBlocks, selectedBlockId],
+  );
+  const activeFormatting = selectedBlock?.formatting || currentFormatting;
 
   // Actions
   const handleSelectBlock = useCallback(
     (blockId: string) => {
+      logger.hook('useTextEditor', 'handleSelectBlock', {blockId});
       dispatch(setSelectedBlockId(blockId));
+
+      // Sync formatting from selected block to global state
+      const block = textBlocks.find(b => b.id === blockId);
+      if (block) {
+        dispatch(setTextFormatting(block.formatting));
+      }
     },
-    [dispatch],
+    [dispatch, textBlocks],
   );
 
   const handleTextChange = useCallback(
     (blockId: string, text: string) => {
-      if (!currentNote || currentNote.type !== 'text') return;
+      logger.hook('useTextEditor', 'handleTextChange', {
+        blockId,
+        textLength: text.length,
+      });
+      if (!currentNote || currentNote.type !== 'text') {
+        logger.warn('handleTextChange called without valid text note', {
+          hasCurrentNote: !!currentNote,
+          noteType: currentNote?.type,
+        });
+        return;
+      }
 
-      const content = currentNote.content as {type: 'text'; blocks: TextBlock[]; version: number};
+      const content = currentNote.content as {
+        type: 'text';
+        blocks: TextBlock[];
+        version: number;
+      };
       const updatedBlocks = content.blocks.map(block =>
         block.id === blockId ? {...block, text} : block,
       );
@@ -52,6 +94,7 @@ export const useTextEditor = () => {
         updateCurrentNote({
           content: {
             type: 'text',
+            text: updatedBlocks.map(b => b.text).join('\n'),
             blocks: updatedBlocks,
             version: content.version,
           },
@@ -64,9 +107,37 @@ export const useTextEditor = () => {
 
   const handleAddBlock = useCallback(
     (afterBlockId?: string) => {
-      if (!currentNote || currentNote.type !== 'text') return;
+      logger.hook('useTextEditor', 'handleAddBlock', {afterBlockId});
+      if (!currentNote || currentNote.type !== 'text') {
+        logger.warn('handleAddBlock called without valid text note', {
+          hasCurrentNote: !!currentNote,
+          noteType: currentNote?.type,
+          currentNoteId: currentNote?.id,
+        });
+        return;
+      }
 
-      const content = currentNote.content as {type: 'text'; blocks: TextBlock[]; version: number};
+      if (!('blocks' in currentNote.content)) {
+        logger.warn('handleAddBlock called but content has no blocks', {
+          noteId: currentNote.id,
+          contentType: currentNote.content.type,
+        });
+        return;
+      }
+
+      const content = currentNote.content as {
+        type: 'text';
+        blocks: TextBlock[];
+        version: number;
+      };
+
+      if (!Array.isArray(content.blocks)) {
+        logger.warn('handleAddBlock called but blocks is not an array', {
+          noteId: currentNote.id,
+          blocksType: typeof content.blocks,
+        });
+        return;
+      }
       const newBlock: TextBlock = {
         id: generateId(),
         text: '',
@@ -90,6 +161,7 @@ export const useTextEditor = () => {
         updateCurrentNote({
           content: {
             type: 'text',
+            text: updatedBlocks.map(b => b.text).join('\n'),
             blocks: updatedBlocks,
             version: content.version,
           },
@@ -105,7 +177,11 @@ export const useTextEditor = () => {
     (blockId: string) => {
       if (!currentNote || currentNote.type !== 'text') return;
 
-      const content = currentNote.content as {type: 'text'; blocks: TextBlock[]; version: number};
+      const content = currentNote.content as {
+        type: 'text';
+        blocks: TextBlock[];
+        version: number;
+      };
       if (content.blocks.length <= 1) return; // Keep at least one block
 
       const updatedBlocks = content.blocks.filter(b => b.id !== blockId);
@@ -114,6 +190,7 @@ export const useTextEditor = () => {
         updateCurrentNote({
           content: {
             type: 'text',
+            text: updatedBlocks.map(b => b.text).join('\n'),
             blocks: updatedBlocks,
             version: content.version,
           },
@@ -128,7 +205,11 @@ export const useTextEditor = () => {
     (blockId: string, blockType: BlockType) => {
       if (!currentNote || currentNote.type !== 'text') return;
 
-      const content = currentNote.content as {type: 'text'; blocks: TextBlock[]; version: number};
+      const content = currentNote.content as {
+        type: 'text';
+        blocks: TextBlock[];
+        version: number;
+      };
       const updatedBlocks = content.blocks.map(block =>
         block.id === blockId ? {...block, blockType} : block,
       );
@@ -137,6 +218,7 @@ export const useTextEditor = () => {
         updateCurrentNote({
           content: {
             type: 'text',
+            text: updatedBlocks.map(b => b.text).join('\n'),
             blocks: updatedBlocks,
             version: content.version,
           },
@@ -148,25 +230,116 @@ export const useTextEditor = () => {
   );
 
   const handleToggleFormatting = useCallback(
-    (key: keyof Pick<TextFormatting, 'bold' | 'italic' | 'underline' | 'strikethrough'>) => {
+    (
+      key: keyof Pick<
+        TextFormatting,
+        'bold' | 'italic' | 'underline' | 'strikethrough'
+      >,
+    ) => {
+      logger.hook('useTextEditor', 'handleToggleFormatting', {
+        key,
+        selectedBlockId,
+      });
+
+      if (!currentNote || currentNote.type !== 'text' || !selectedBlockId) {
+        logger.warn('handleToggleFormatting called without selected block');
+        return;
+      }
+
+      // Update global formatting state
       dispatch(toggleTextFormatting(key));
+
+      // Update the selected block's formatting
+      const content = currentNote.content as {
+        type: 'text';
+        blocks: TextBlock[];
+        version: number;
+      };
+      const updatedBlocks = content.blocks.map(block => {
+        if (block.id === selectedBlockId) {
+          const newFormatting = {
+            ...block.formatting,
+            [key]: !block.formatting[key],
+          };
+          return {...block, formatting: newFormatting};
+        }
+        return block;
+      });
+
+      dispatch(
+        updateCurrentNote({
+          content: {
+            type: 'text',
+            text: updatedBlocks.map(b => b.text).join('\n'),
+            blocks: updatedBlocks,
+            version: content.version,
+          },
+        }),
+      );
+      dispatch(markDirty());
     },
-    [dispatch],
+    [currentNote, selectedBlockId, dispatch],
   );
 
   const handleChangeFontSize = useCallback(
     (delta: number) => {
-      const newSize = Math.max(12, Math.min(32, currentFormatting.fontSize + delta));
-      dispatch(setTextFormatting({...currentFormatting, fontSize: newSize}));
+      if (!currentNote || currentNote.type !== 'text' || !selectedBlockId) {
+        logger.warn('handleChangeFontSize called without selected block');
+        return;
+      }
+
+      const content = currentNote.content as {
+        type: 'text';
+        blocks: TextBlock[];
+        version: number;
+      };
+      const targetBlock = content.blocks.find(b => b.id === selectedBlockId);
+      if (!targetBlock) return;
+
+      const newSize = Math.max(
+        12,
+        Math.min(32, targetBlock.formatting.fontSize + delta),
+      );
+      logger.hook('useTextEditor', 'handleChangeFontSize', {
+        delta,
+        oldSize: targetBlock.formatting.fontSize,
+        newSize,
+      });
+
+      // Update global formatting state
+      dispatch(
+        setTextFormatting({...targetBlock.formatting, fontSize: newSize}),
+      );
+
+      // Update the selected block's formatting
+      const updatedBlocks = content.blocks.map(block =>
+        block.id === selectedBlockId
+          ? {...block, formatting: {...block.formatting, fontSize: newSize}}
+          : block,
+      );
+
+      dispatch(
+        updateCurrentNote({
+          content: {
+            type: 'text',
+            text: updatedBlocks.map(b => b.text).join('\n'),
+            blocks: updatedBlocks,
+            version: content.version,
+          },
+        }),
+      );
+      dispatch(markDirty());
     },
-    [currentFormatting, dispatch],
+    [currentNote, selectedBlockId, dispatch],
   );
 
   const handleMarkSaved = useCallback(() => {
+    logger.hook('useTextEditor', 'handleMarkSaved');
     dispatch(markSaved());
   }, [dispatch]);
 
   const handleResetEditor = useCallback(() => {
+    logger.hook('useTextEditor', 'handleResetEditor');
     dispatch(resetEditor());
   }, [dispatch]);
 
@@ -174,7 +347,7 @@ export const useTextEditor = () => {
     // State
     currentNote,
     textBlocks,
-    currentFormatting,
+    currentFormatting: activeFormatting, // Return formatting from selected block
     isDirty,
 
     // Actions

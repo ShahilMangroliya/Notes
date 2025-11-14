@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from 'styled-components/native';
+import {useTheme} from 'styled-components/native';
+import Icon from '@/components/Icon';
 
 /**
  * Props for SearchBar component
@@ -15,15 +17,18 @@ export interface SearchBarProps {
 
 const Container = styled.View`
   background-color: ${props => props.theme.surface};
-  border-radius: 12px;
+  border-radius: 14px;
   flex-direction: row;
   align-items: center;
-  padding: 12px 16px;
-  border: 1px solid ${props => props.theme.border};
+  padding: 14px 18px;
+  shadow-color: #000;
+  shadow-offset: 0px 1px;
+  shadow-opacity: 0.02;
+  shadow-radius: 4px;
+  elevation: 1;
 `;
 
-const SearchIcon = styled.Text`
-  font-size: 18px;
+const IconContainer = styled.View`
   margin-right: 8px;
 `;
 
@@ -39,11 +44,6 @@ const Input = styled.TextInput.attrs(props => ({
 const ClearButton = styled.TouchableOpacity`
   padding: 4px;
   margin-left: 8px;
-`;
-
-const ClearIcon = styled.Text`
-  font-size: 16px;
-  color: ${props => props.theme.textSecondary};
 `;
 
 /**
@@ -63,9 +63,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onChangeText,
   placeholder = 'Search notes...',
 }) => {
+  const theme = useTheme();
+
   return (
     <Container>
-      <SearchIcon>🔍</SearchIcon>
+      <IconContainer>
+        <Icon name="search" size={18} color={theme.textSecondary} />
+      </IconContainer>
       <Input
         value={value}
         onChangeText={onChangeText}
@@ -81,7 +85,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Clear search"
         >
-          <ClearIcon>✕</ClearIcon>
+          <Icon name="close" size={16} color={theme.textSecondary} />
         </ClearButton>
       )}
     </Container>

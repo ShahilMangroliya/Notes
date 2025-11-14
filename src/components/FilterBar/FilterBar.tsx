@@ -1,5 +1,8 @@
 import React from 'react';
 import styled from 'styled-components/native';
+import {useTheme} from 'styled-components/native';
+import Icon from '@/components/Icon';
+import type {AntDesignIconName} from '@/components/Icon';
 import type {NoteFilter} from '@/types/note';
 
 /**
@@ -26,39 +29,45 @@ const Container = styled.View`
 
 const FilterButton = styled.TouchableOpacity<{$active: boolean}>`
   background-color: ${props =>
-    props.$active ? props.theme.background : props.theme.surface};
-  border: 1px solid
-    ${props => (props.$active ? props.theme.text : props.theme.border)};
+    props.$active ? props.theme.text : props.theme.surface};
   border-radius: 20px;
-  padding: 8px 16px;
+  padding: 10px 18px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+`;
+
+const FilterContent = styled.View`
   flex-direction: row;
   align-items: center;
   gap: 6px;
 `;
 
 const FilterText = styled.Text<{$active: boolean}>`
-  color: ${props => props.theme.text};
+  color: ${props => (props.$active ? props.theme.surface : props.theme.text)};
   font-size: 14px;
-  font-weight: ${props => (props.$active ? '600' : '400')};
+  font-weight: ${props => (props.$active ? '600' : '500')};
 `;
 
 const Count = styled.Text<{$active: boolean}>`
-  color: ${props => props.theme.textSecondary};
+  color: ${props =>
+    props.$active ? props.theme.surface : props.theme.textSecondary};
   font-size: 12px;
   font-weight: ${props => (props.$active ? '600' : '400')};
+  opacity: ${props => (props.$active ? 0.9 : 0.7)};
 `;
 
 interface FilterOption {
   key: NoteFilter;
   label: string;
-  icon: string;
+  icon: AntDesignIconName;
 }
 
 const FILTER_OPTIONS: FilterOption[] = [
-  {key: 'all', label: 'All', icon: '📝'},
-  {key: 'text', label: 'Text', icon: '📄'},
-  {key: 'drawing', label: 'Drawing', icon: '🎨'},
-  {key: 'pinned', label: 'Pinned', icon: '📌'},
+  {key: 'all', label: 'All', icon: 'file-text'},
+  {key: 'text', label: 'Text', icon: 'file-text'},
+  {key: 'drawing', label: 'Drawing', icon: 'picture'},
+  {key: 'pinned', label: 'Pinned', icon: 'pushpin'},
 ];
 
 /**
@@ -78,27 +87,35 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onFilterChange,
   counts,
 }) => {
+  const theme = useTheme();
+
   return (
     <Container>
-      {FILTER_OPTIONS.map(option => (
-        <FilterButton
-          key={option.key}
-          $active={activeFilter === option.key}
-          onPress={() => onFilterChange(option.key)}
-          accessibilityRole="button"
-          accessibilityLabel={`Filter by ${option.label}`}
-          accessibilityState={{selected: activeFilter === option.key}}
-        >
-          <FilterText $active={activeFilter === option.key}>
-            {option.icon} {option.label}
-          </FilterText>
-          {counts && counts[option.key] > 0 && (
-            <Count $active={activeFilter === option.key}>
-              ({counts[option.key]})
-            </Count>
-          )}
-        </FilterButton>
-      ))}
+      {FILTER_OPTIONS.map(option => {
+        const isActive = activeFilter === option.key;
+        return (
+          <FilterButton
+            key={option.key}
+            $active={isActive}
+            onPress={() => onFilterChange(option.key)}
+            accessibilityRole="button"
+            accessibilityLabel={`Filter by ${option.label}`}
+            accessibilityState={{selected: isActive}}
+          >
+            <FilterContent>
+              <Icon
+                name={option.icon}
+                size={14}
+                color={isActive ? theme.surface : theme.text}
+              />
+              <FilterText $active={isActive}>{option.label}</FilterText>
+              {counts && counts[option.key] > 0 && (
+                <Count $active={isActive}>({counts[option.key]})</Count>
+              )}
+            </FilterContent>
+          </FilterButton>
+        );
+      })}
     </Container>
   );
 };

@@ -15,6 +15,7 @@ Complete guide to all reusable components in the Notes app.
 ## Overview
 
 All components are:
+
 - ✅ Theme-aware (automatically use theme colors)
 - ✅ Type-safe (full TypeScript support)
 - ✅ Accessible (proper accessibility props)
@@ -33,10 +34,68 @@ All components are:
 4. **Button** - Themed button with variants
 5. **ButtonText** - Text component for buttons
 6. **Card** - Themed card component
+7. **Icon** - AntDesign icon component with type safety
 
 ---
 
 ## Component Details
+
+### Icon
+
+**Location**: `src/components/Icon/`
+
+Type-safe AntDesign icon component using `@react-native-vector-icons/ant-design`.
+
+#### Props
+
+```typescript
+interface IconProps {
+  name: AntDesignIconName; // Type-safe icon name (autocomplete available)
+  size?: number; // Icon size in pixels (default: 24)
+  color?: string; // Icon color (use theme colors)
+  style?: TextStyle; // Additional styles
+}
+```
+
+#### Type Safety
+
+The component uses the `AntDesignIconName` type exported from the library, providing:
+
+- ✅ Autocomplete for all available icon names
+- ✅ Type checking to prevent invalid icon names
+- ✅ IntelliSense support in IDEs
+
+#### Usage
+
+```typescript
+import {Icon} from '@/components/Icon';
+import type {AntDesignIconName} from '@/components/Icon';
+import {useTheme} from 'styled-components/native';
+
+// Basic usage
+<Icon name="home" size={24} color="#007AFF" />
+
+// With theme
+const theme = useTheme();
+<Icon name="user" size={30} color={theme.text} />
+
+// In buttons
+<IconButton onPress={handleBack}>
+  <Icon name="arrow-left" size={24} color={theme.text} />
+</IconButton>
+```
+
+#### Common Icons
+
+- Navigation: `arrow-left`, `arrow-right`, `arrow-up`, `arrow-down`
+- Actions: `plus`, `minus`, `close`, `check`, `delete`, `edit`, `save`, `search`
+- Content: `file-text`, `picture`, `pushpin`, `unordered-list`, `ordered-list`
+- Media: `audio`, `pause-circle`, `play-circle`
+- Editing: `undo`, `redo`, `bold`, `italic`, `underline`
+
+**See**: `vault/ANTDESIGN_ICONS.md` for complete icon reference.
+
+---
 
 ### Container
 
@@ -48,8 +107,8 @@ Basic container with theme background and full flex.
 
 ```typescript
 interface ContainerProps {
-  $padding?: number;  // Padding in pixels
-  $margin?: number;   // Margin in pixels
+  $padding?: number; // Padding in pixels
+  $margin?: number; // Margin in pixels
 }
 ```
 
@@ -60,7 +119,7 @@ import {Container} from '@/components';
 
 <Container $padding={16} $margin={8}>
   <Text>Content</Text>
-</Container>
+</Container>;
 ```
 
 ---
@@ -75,8 +134,8 @@ Container that respects device safe areas (notches, status bars, etc.).
 
 ```typescript
 interface SafeAreaContainerProps {
-  $edges?: ('top' | 'bottom' | 'left' | 'right')[];  // Edges to apply safe area
-  $padding?: number;  // Padding in pixels
+  $edges?: ('top' | 'bottom' | 'left' | 'right')[]; // Edges to apply safe area
+  $padding?: number; // Padding in pixels
 }
 ```
 
@@ -108,9 +167,9 @@ Themed text component with styling options.
 
 ```typescript
 interface StyledTextProps {
-  $secondary?: boolean;              // Use secondary text color
-  $align?: 'left' | 'center' | 'right';  // Text alignment
-  $weight?: 'normal' | 'bold' | '600' | '700';  // Font weight
+  $secondary?: boolean; // Use secondary text color
+  $align?: 'left' | 'center' | 'right'; // Text alignment
+  $weight?: 'normal' | 'bold' | '600' | '700'; // Font weight
 }
 ```
 
@@ -143,16 +202,17 @@ Themed button component with multiple variants and states.
 
 ```typescript
 interface ButtonProps {
-  $variant?: 'primary' | 'secondary' | 'outline';  // Button style
-  $disabled?: boolean;     // Disabled state
-  $fullWidth?: boolean;    // Full width button
-  $size?: 'small' | 'medium' | 'large';  // Button size
+  $variant?: 'primary' | 'secondary' | 'outline'; // Button style
+  $disabled?: boolean; // Disabled state
+  $fullWidth?: boolean; // Full width button
+  $size?: 'small' | 'medium' | 'large'; // Button size
 }
 ```
 
 #### Accessibility
 
 Automatically includes:
+
 - `accessibilityRole="button"`
 - `accessibilityState` for disabled state
 - `activeOpacity` for touch feedback
@@ -195,8 +255,8 @@ Text component designed for buttons. Matches button variants.
 
 ```typescript
 interface ButtonTextProps {
-  $variant?: 'primary' | 'secondary' | 'outline';  // Match parent Button
-  $disabled?: boolean;  // Disabled state
+  $variant?: 'primary' | 'secondary' | 'outline'; // Match parent Button
+  $disabled?: boolean; // Disabled state
 }
 ```
 
@@ -205,7 +265,7 @@ interface ButtonTextProps {
 ```typescript
 import {ButtonText} from '@/components';
 
-<ButtonText $variant="primary">Button Label</ButtonText>
+<ButtonText $variant="primary">Button Label</ButtonText>;
 ```
 
 ---
@@ -220,9 +280,9 @@ Themed card component with customizable spacing and elevation.
 
 ```typescript
 interface CardProps {
-  $padding?: number;   // Padding (default: 16)
-  $margin?: number;    // Margin (default: 8)
-  $radius?: number;    // Border radius (default: 12)
+  $padding?: number; // Padding (default: 16)
+  $margin?: number; // Margin (default: 8)
+  $radius?: number; // Border radius (default: 12)
   $elevated?: boolean; // Show shadow/elevation
 }
 ```
@@ -259,9 +319,7 @@ const HomeScreen = () => {
     <SafeAreaContainer>
       <Card $elevated>
         <StyledText $weight="bold">Welcome</StyledText>
-        <StyledText $secondary>
-          This is a themed card component
-        </StyledText>
+        <StyledText $secondary>This is a themed card component</StyledText>
         <Button $variant="primary" $fullWidth>
           <ButtonText $variant="primary">Get Started</ButtonText>
         </Button>
@@ -284,9 +342,9 @@ const FormScreen = () => {
         <StyledText $weight="bold" $align="center">
           Create Account
         </StyledText>
-        
+
         {/* Form fields */}
-        
+
         <Button $variant="primary" $fullWidth $size="large">
           <ButtonText $variant="primary">Submit</ButtonText>
         </Button>
@@ -319,11 +377,13 @@ const NoteItem = ({title, content}) => {
 ### 1. Use Transient Props
 
 ✅ **DO:**
+
 ```typescript
 <Button $variant="primary" $disabled={false}>
 ```
 
 ❌ **DON'T:**
+
 ```typescript
 <Button variant="primary" disabled={false}>  // Causes React Native warning
 ```
@@ -331,6 +391,7 @@ const NoteItem = ({title, content}) => {
 ### 2. Combine Components
 
 ✅ **DO:**
+
 ```typescript
 <SafeAreaContainer>
   <Card $elevated>
@@ -342,16 +403,18 @@ const NoteItem = ({title, content}) => {
 ### 3. Use Theme Colors
 
 ✅ **DO:**
+
 ```typescript
 // Components automatically use theme
-<Container>  // Uses theme.background
-  <StyledText>  // Uses theme.text
-    Hello
-  </StyledText>
+<Container>
+  {' '}
+  // Uses theme.background
+  <StyledText> // Uses theme.text Hello</StyledText>
 </Container>
 ```
 
 ❌ **DON'T:**
+
 ```typescript
 // Don't hardcode colors
 <View style={{backgroundColor: '#FFFFFF'}}>
@@ -360,11 +423,13 @@ const NoteItem = ({title, content}) => {
 ### 4. Import from Index
 
 ✅ **DO:**
+
 ```typescript
 import {Button, Card, StyledText} from '@/components';
 ```
 
 ❌ **DON'T:**
+
 ```typescript
 import Button from '@/components/Button/Button';
 ```
@@ -413,7 +478,7 @@ export type {ComponentNameProps} from './ComponentName';
 
 ### Template
 
-```typescript
+````typescript
 import React from 'react';
 import styled from 'styled-components/native';
 
@@ -426,7 +491,7 @@ export interface ComponentNameProps {
 
 /**
  * Component description
- * 
+ *
  * @example
  * ```tsx
  * <ComponentName $prop="value">
@@ -440,7 +505,7 @@ export const ComponentName = styled.View<ComponentNameProps>`
 `;
 
 export default ComponentName;
-```
+````
 
 ### Checklist
 
@@ -454,6 +519,4 @@ export default ComponentName;
 
 ---
 
-*Last updated: 2024*
-
-
+_Last updated: 2024_

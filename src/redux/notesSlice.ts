@@ -1,6 +1,7 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import type {Note, NoteFilter, SortOption} from '@/types/note';
 import StorageHelper from '@/util/StorageHelper';
+import logger from '@/util/DebugLogger';
 
 /**
  * Notes state interface
@@ -29,6 +30,7 @@ const initialState: NotesState = {
  * Load all notes from storage
  */
 export const loadNotes = createAsyncThunk('notes/loadNotes', async () => {
+  logger.action('notes/loadNotes', 'pending');
   const noteIds = StorageHelper.getItem('notes.list', 'string') as string;
   const ids = noteIds ? JSON.parse(noteIds) : [];
 
@@ -39,6 +41,7 @@ export const loadNotes = createAsyncThunk('notes/loadNotes', async () => {
       notes.push(JSON.parse(noteData));
     }
   }
+  logger.action('notes/loadNotes', 'fulfilled', {count: notes.length});
   return notes;
 });
 
@@ -48,6 +51,7 @@ export const loadNotes = createAsyncThunk('notes/loadNotes', async () => {
 export const saveNote = createAsyncThunk(
   'notes/saveNote',
   async (note: Note) => {
+    logger.action('notes/saveNote', 'pending', {noteId: note.id, title: note.title});
     StorageHelper.setItem(`notes.${note.id}`, JSON.stringify(note));
 
     const noteIds = StorageHelper.getItem('notes.list', 'string') as string;
@@ -58,6 +62,7 @@ export const saveNote = createAsyncThunk(
       StorageHelper.setItem('notes.list', JSON.stringify(ids));
     }
 
+    logger.action('notes/saveNote', 'fulfilled', {noteId: note.id});
     return note;
   },
 );
@@ -84,28 +89,43 @@ const notesSlice = createSlice({
   initialState,
   reducers: {
     setCurrentNote: (state, action: PayloadAction<Note | null>) => {
+      const prevNoteId = state.currentNote?.id;
+      const nextNoteId = action.payload?.id;
+      logger.action('notes/setCurrentNote', action.payload, {
+        prevNoteId,
+        nextNoteId,
+      });
       state.currentNote = action.payload;
+      logger.reducer('notes', 'setCurrentNote', {prevNoteId}, {nextNoteId});
     },
 
     updateCurrentNote: (state, action: PayloadAction<Partial<Note>>) => {
       if (state.currentNote) {
+        const prevNote = {...state.currentNote};
         state.currentNote = {
           ...state.currentNote,
           ...action.payload,
           updatedAt: Date.now(),
         };
+        logger.action('notes/updateCurrentNote', action.payload, {
+          noteId: state.currentNote.id,
+        });
+        logger.reducer('notes', 'updateCurrentNote', prevNote, state.currentNote);
       }
     },
 
     setFilter: (state, action: PayloadAction<NoteFilter>) => {
+      logger.action('notes/setFilter', action.payload);
       state.filter = action.payload;
     },
 
     setSearchQuery: (state, action: PayloadAction<string>) => {
+      logger.action('notes/setSearchQuery', action.payload);
       state.searchQuery = action.payload;
     },
 
     setSortBy: (state, action: PayloadAction<SortOption>) => {
+      logger.action('notes/setSortBy', action.payload);
       state.sortBy = action.payload;
     },
 
@@ -135,14 +155,23 @@ const notesSlice = createSlice({
   extraReducers: builder => {
     // loadNotes
     builder.addCase(loadNotes.pending, state => {
+      logger.reducer('notes', 'loadNotes.pending', state, {...state, isLoading: true});
       state.isLoading = true;
       state.error = null;
     });
     builder.addCase(loadNotes.fulfilled, (state, action) => {
+      logger.reducer('notes', 'loadNotes.fulfilled', state, {
+        ...state,
+        notes: action.payload,
+        isLoading: false,
+      });
       state.isLoading = false;
       state.notes = action.payload;
     });
     builder.addCase(loadNotes.rejected, (state, action) => {
+      logger.error('notes/loadNotes.rejected', action.error as Error, {
+        error: action.error.message,
+      });
       state.isLoading = false;
       state.error = action.error.message || 'Failed to load notes';
     });
@@ -150,19 +179,23 @@ const notesSlice = createSlice({
     // saveNote
     builder.addCase(saveNote.fulfilled, (state, action) => {
       const index = state.notes.findIndex(n => n.id === action.payload.id);
+      const prevNotes = [...state.notes];
       if (index >= 0) {
         state.notes[index] = action.payload;
       } else {
         state.notes.push(action.payload);
       }
+      logger.reducer('notes', 'saveNote.fulfilled', prevNotes, state.notes);
     });
 
     // deleteNote
     builder.addCase(deleteNote.fulfilled, (state, action) => {
+      const prevNotes = [...state.notes];
       state.notes = state.notes.filter(n => n.id !== action.payload);
       if (state.currentNote?.id === action.payload) {
         state.currentNote = null;
       }
+      logger.reducer('notes', 'deleteNote.fulfilled', prevNotes, state.notes);
     });
   },
 });

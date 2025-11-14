@@ -97,3 +97,32 @@ export type {DrawingCanvasProps} from './DrawingCanvas/DrawingCanvas';
 // VoiceRecorder
 export {VoiceRecorder, default as VoiceRecorderDefault} from './VoiceRecorder';
 export type {VoiceRecorderProps} from './VoiceRecorder/VoiceRecorder';
+
+// Icon
+export {Icon, default as IconDefault} from './Icon';
+export type {IconProps} from './Icon/Icon';
+
+// RichTextEditor (old - kept for backward compatibility)
+export {
+  RichTextEditor,
+  default as RichTextEditorDefault,
+} from './RichTextEditor';
+export type {RichTextEditorProps} from './RichTextEditor/RichTextEditor';
+
+// FormattedText (old - kept for backward compatibility)
+export {FormattedText, default as FormattedTextDefault} from './FormattedText';
+export type {FormattedTextProps} from './FormattedText/FormattedText';
+
+// InlineRichTextEditor (new - WebView-based WYSIWYG editor)
+export {
+  InlineRichTextEditor,
+  default as InlineRichTextEditorDefault,
+} from './InlineRichTextEditor';
+export type {InlineRichTextEditorProps} from './InlineRichTextEditor/InlineRichTextEditor';
+
+// InlineFormattingToolbar (new - for WebView editor)
+export {
+  InlineFormattingToolbar,
+  default as InlineFormattingToolbarDefault,
+} from './InlineFormattingToolbar';
+export type {InlineFormattingToolbarProps} from './InlineFormattingToolbar/InlineFormattingToolbar';

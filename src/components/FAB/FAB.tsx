@@ -43,7 +43,7 @@ const StyledFAB = styled.TouchableOpacity<FABProps>`
     if (props.$size === 'large') return '32px';
     return '28px';
   }};
-  background-color: ${props => props.theme.background};
+  background-color: ${props => props.theme.primary};
   align-items: center;
   justify-content: center;
   shadow-color: #000;

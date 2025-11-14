@@ -1,5 +1,7 @@
 import React, {useMemo} from 'react';
 import styled from 'styled-components/native';
+import {useTheme} from 'styled-components/native';
+import Icon from '@/components/Icon';
 import type {Note, TextContent} from '@/types/note';
 
 /**
@@ -14,17 +16,36 @@ export interface NoteCardProps {
   onLongPress?: (noteId: string) => void;
 }
 
-const Card = styled.TouchableOpacity<{$color: string}>`
-  background-color: ${props => props.$color};
-  border-radius: 12px;
-  padding: 16px;
+const Card = styled.TouchableOpacity<{$color: string; $isLight: boolean}>`
+  background-color: ${props => {
+    // In dark theme, use theme surface as base and apply note color as subtle tint
+    // In light theme, use note color directly
+    if (props.$isLight) {
+      return props.$color;
+    }
+    // For dark theme, blend note color with surface
+    // If note color is white or very light, use surface directly
+    if (
+      props.$color === '#FFFFFF' ||
+      props.$color === '#FFF' ||
+      props.$color === 'white'
+    ) {
+      return props.theme.surface;
+    }
+    // For colored notes in dark theme, use a darker version
+    return props.theme.surface;
+  }};
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 12px;
   shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 3px;
-  elevation: 3;
-  border: 1px solid ${props => props.theme.border};
+  shadow-offset: 0px 1px;
+  shadow-opacity: ${props => (props.$isLight ? 0.04 : 0.2)};
+  shadow-radius: 8px;
+  elevation: 2;
+  border-width: ${props => (props.$isLight ? '0px' : '0.5px')};
+  border-color: ${props =>
+    props.$isLight ? 'transparent' : props.theme.border};
 `;
 
 const Header = styled.View`
@@ -48,10 +69,7 @@ const HeaderRight = styled.View`
   gap: 6px;
 `;
 
-const PinIndicator = styled.Text`
-  font-size: 16px;
-  line-height: 16px;
-`;
+const PinIndicator = styled.View``;
 
 const TypeBadge = styled.View`
   background-color: ${props => props.theme.surface};
@@ -129,7 +147,7 @@ const getPreviewText = (note: Note): string => {
   if (note.type === 'text') {
     const textContent = note.content as TextContent;
     const text = textContent.blocks
-      .map(block => block.text)
+      ?.map(block => block.text)
       .join(' ')
       .trim();
     return text || 'Empty note';
@@ -154,15 +172,22 @@ export const NoteCard: React.FC<NoteCardProps> = ({
   onPress,
   onLongPress,
 }) => {
+  const theme = useTheme();
   const preview = useMemo(() => getPreviewText(note), [note]);
   const timestamp = useMemo(
     () => formatRelativeTime(note.updatedAt),
     [note.updatedAt],
   );
 
+  // Determine if we're in light theme (for color blending)
+  // Check if background is light (light theme uses #FAFAFA, dark uses #000000)
+  const isLight =
+    theme.background !== '#000000' && theme.background !== '#1C1C1E';
+
   return (
     <Card
       $color={note.color}
+      $isLight={isLight}
       onPress={() => onPress(note.id)}
       onLongPress={onLongPress ? () => onLongPress(note.id) : undefined}
       accessibilityRole="button"
@@ -172,7 +197,11 @@ export const NoteCard: React.FC<NoteCardProps> = ({
       <Header>
         <Title>{note.title || 'Untitled'}</Title>
         <HeaderRight>
-          {note.isPinned && <PinIndicator>📌</PinIndicator>}
+          {note.isPinned && (
+            <PinIndicator>
+              <Icon name="pushpin" size={16} color={theme.textSecondary} />
+            </PinIndicator>
+          )}
           <TypeBadge>
             <TypeText>{note.type}</TypeText>
           </TypeBadge>

@@ -1,6 +1,8 @@
 import React from 'react';
 import {Modal as RNModal} from 'react-native';
 import styled from 'styled-components/native';
+import {useTheme} from 'styled-components/native';
+import Icon from '@/components/Icon';
 
 /**
  * Props for Modal component
@@ -63,12 +65,6 @@ const CloseButton = styled.TouchableOpacity`
   margin-left: 12px;
 `;
 
-const CloseButtonText = styled.Text`
-  color: ${props => props.theme.textSecondary};
-  font-size: 24px;
-  line-height: 24px;
-`;
-
 const ModalBody = styled.View`
   padding: 20px;
 `;
@@ -105,6 +101,8 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   disableBackdropClose = false,
 }) => {
+  const theme = useTheme();
+
   const handleBackdropPress = () => {
     if (!disableBackdropClose) {
       onClose();
@@ -133,7 +131,7 @@ export const Modal: React.FC<ModalProps> = ({
                   accessibilityRole="button"
                   accessibilityLabel="Close modal"
                 >
-                  <CloseButtonText>×</CloseButtonText>
+                  <Icon name="close" size={24} color={theme.textSecondary} />
                 </CloseButton>
               )}
             </ModalHeader>

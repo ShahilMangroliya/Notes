@@ -67,9 +67,9 @@ export const selectFilteredNotes = createSelector(
 
         // Search in text content
         if (note.type === 'text' && isTextContent(note.content)) {
-          return note.content.blocks.some(block =>
+          return note.content.blocks?.some(block =>
             block.text.toLowerCase().includes(query),
-          );
+          ) || false;
         }
 
         return false;

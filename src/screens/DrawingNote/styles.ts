@@ -28,6 +28,7 @@ export const HeaderRight = styled.View`
 
 export const BackButton = styled.Text`
   font-size: 20px;
+  color: ${props => props.theme.text};
 `;
 
 export const HeaderTitle = styled.Text`
@@ -46,7 +47,7 @@ export const DirtyIndicator = styled.View`
   width: 8px;
   height: 8px;
   border-radius: 4px;
-  background-color: #ff9500;
+  background-color: ${props => props.theme.warning};
 `;
 
 export const TitleInput = styled.TextInput.attrs(props => ({

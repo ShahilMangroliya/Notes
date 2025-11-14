@@ -44,11 +44,11 @@ export const Button = styled(TouchableOpacity).attrs<ButtonProps>(props => ({
   border: 1px solid
     ${props =>
       props.$variant === 'outline' ? props.theme.border : 'transparent'};
-  border-radius: 8px;
+  border-radius: 12px;
   padding: ${props => {
-    if (props.$size === 'small') return '8px 16px';
+    if (props.$size === 'small') return '10px 20px';
     if (props.$size === 'large') return '16px 32px';
-    return '12px 24px';
+    return '14px 28px';
   }};
   align-items: center;
   justify-content: center;

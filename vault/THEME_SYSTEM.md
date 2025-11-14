@@ -19,6 +19,7 @@ Complete guide to the theme system implementation in the Notes app.
 ## Overview
 
 The theme system provides:
+
 - ✅ Light and dark mode support
 - ✅ System theme detection
 - ✅ Persistent theme preferences (MMKV storage)
@@ -75,11 +76,11 @@ The theme system provides:
 
 ```typescript
 interface ThemeColors {
-  background: string;      // Main background color
-  surface: string;         // Card/surface background
-  text: string;           // Primary text color
-  textSecondary: string;  // Secondary/muted text
-  border: string;         // Border color
+  background: string; // Main background color
+  surface: string; // Card/surface background
+  text: string; // Primary text color
+  textSecondary: string; // Secondary/muted text
+  border: string; // Border color
 }
 ```
 
@@ -136,9 +137,7 @@ import ThemeProvider from '@/providers/ThemeProvider';
 const App = () => {
   return (
     <Provider store={store}>
-      <ThemeProvider>
-        {/* App content */}
-      </ThemeProvider>
+      <ThemeProvider>{/* App content */}</ThemeProvider>
     </Provider>
   );
 };
@@ -170,11 +169,11 @@ Main hook for theme state management. Connects to Redux store.
   isDark: boolean;
   systemPrefersDark: boolean;
   isInitialized: boolean;
-  
+
   // Getters
   effectiveTheme: 'light' | 'dark';
   isDarkMode: boolean;
-  
+
   // Actions
   setTheme: (theme: ThemeMode) => void;
   initializeTheme: () => void;
@@ -196,13 +195,11 @@ import useThemeStore from '@/hooks/useThemeStore';
 
 const MyComponent = () => {
   const {isDarkMode, setTheme, currentTheme} = useThemeStore();
-  
+
   return (
     <View>
       <Text>Current theme: {currentTheme}</Text>
-      <Button onPress={() => setTheme('dark')}>
-        Switch to Dark
-      </Button>
+      <Button onPress={() => setTheme('dark')}>Switch to Dark</Button>
     </View>
   );
 };
@@ -232,7 +229,7 @@ import {useColorScheme} from '@/hooks/useColorScheme';
 
 const MyComponent = () => {
   const {colors, isDark, setTheme} = useColorScheme();
-  
+
   return (
     <View style={{backgroundColor: colors.background}}>
       <Text style={{color: colors.text}}>
@@ -329,7 +326,7 @@ import {useTheme} from 'styled-components/native';
 
 const MyComponent = () => {
   const theme = useTheme();
-  
+
   return (
     <View style={{backgroundColor: theme.background}}>
       <Text style={{color: theme.text}}>Hello</Text>
@@ -370,7 +367,7 @@ import useThemeStore from '@/hooks/useThemeStore';
 
 const ThemeToggle = () => {
   const {currentTheme, setTheme, isDarkMode} = useThemeStore();
-  
+
   const toggleTheme = () => {
     if (currentTheme === 'system') {
       setTheme(isDarkMode ? 'light' : 'dark');
@@ -378,7 +375,7 @@ const ThemeToggle = () => {
       setTheme(currentTheme === 'light' ? 'dark' : 'light');
     }
   };
-  
+
   return (
     <Button onPress={toggleTheme}>
       <ButtonText>
@@ -403,8 +400,10 @@ const ThemedCard = styled.View<CardProps>`
   border: 1px solid ${props => props.theme.border};
   border-radius: 12px;
   padding: 16px;
-  
-  ${props => props.$elevated && `
+
+  ${props =>
+    props.$elevated &&
+    `
     shadow-color: #000;
     shadow-opacity: 0.1;
     elevation: 3;
@@ -414,7 +413,7 @@ const ThemedCard = styled.View<CardProps>`
 // Usage
 <ThemedCard $elevated>
   <Text>Card content</Text>
-</ThemedCard>
+</ThemedCard>;
 ```
 
 ### Example 4: Accessing Theme in Regular Components
@@ -426,7 +425,7 @@ import {useTheme} from 'styled-components/native';
 
 const MyComponent = () => {
   const theme = useTheme();
-  
+
   const styles = StyleSheet.create({
     container: {
       backgroundColor: theme.background,
@@ -435,7 +434,7 @@ const MyComponent = () => {
       color: theme.text,
     },
   });
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Hello</Text>
@@ -540,6 +539,4 @@ App Start
 
 ---
 
-*Last updated: 2024*
-
-
+_Last updated: 2024_

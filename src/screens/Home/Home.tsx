@@ -1,11 +1,13 @@
 import React, {useState, useCallback} from 'react';
-import {FlatList} from 'react-native';
+import {FlatList, View} from 'react-native';
+import {useTheme} from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import SearchBar from '@/components/SearchBar';
 import FilterBar from '@/components/FilterBar';
 import NoteCard from '@/components/NoteCard';
 import FAB from '@/components/FAB';
 import Modal from '@/components/Modal';
+import Icon from '@/components/Icon';
 import StyledText from '@/components/Text';
 import useNotes from '@/hooks/useNotes';
 import type {HomeScreenProps} from '@/types/navigation';
@@ -16,6 +18,7 @@ import * as S from './styles';
  * Home screen displaying list of notes
  */
 const Home: React.FC<HomeScreenProps> = ({navigation}) => {
+  const theme = useTheme();
   const {
     notes,
     filter,
@@ -67,7 +70,9 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
     if (hasNoNotes) {
       return (
         <S.EmptyContainer>
-          <S.EmptyIcon>📝</S.EmptyIcon>
+          <View>
+            <Icon name="file-text" size={64} color={theme.textSecondary} />
+          </View>
           <S.EmptyTitle>No notes yet</S.EmptyTitle>
           <S.EmptySubtitle>
             Tap the + button to create your first note
@@ -79,16 +84,17 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
     if (hasSearchQuery || hasFilter) {
       return (
         <S.EmptyContainer>
-          <S.EmptyIcon>🔍</S.EmptyIcon>
+          <View>
+            <Icon name="search" size={64} color={theme.textSecondary} />
+          </View>
           <S.EmptyTitle>No notes found</S.EmptyTitle>
-          <S.EmptySubtitle>
-            Try adjusting your search or filter
-          </S.EmptySubtitle>
+          <S.EmptySubtitle>Try adjusting your search or filter</S.EmptySubtitle>
         </S.EmptyContainer>
       );
     }
 
     return null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, counts, searchQuery, filter]);
 
   return (
@@ -118,9 +124,11 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
             contentContainerStyle={{
               padding: 16,
               flexGrow: 1,
+              backgroundColor: theme.background,
             }}
             ListEmptyComponent={renderEmptyState}
             showsVerticalScrollIndicator={false}
+            style={{backgroundColor: theme.background}}
           />
         </S.ListContainer>
 
@@ -128,7 +136,7 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
           onPress={() => setShowCreateMenu(true)}
           accessibilityLabel="Create new note"
         >
-          <S.CreateButton>+</S.CreateButton>
+          <Icon name="plus" size={40} color={theme.text} />
         </FAB>
 
         <Modal
@@ -140,7 +148,9 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
             onPress={() => handleCreateNote('text')}
             accessibilityLabel="Create text note"
           >
-            <S.OptionIcon>📝</S.OptionIcon>
+            <View>
+              <Icon name="file-text" size={32} color={theme.text} />
+            </View>
             <S.OptionContent>
               <S.OptionTitle>Text Note</S.OptionTitle>
               <S.OptionDescription>
@@ -153,7 +163,9 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
             onPress={() => handleCreateNote('drawing')}
             accessibilityLabel="Create drawing note"
           >
-            <S.OptionIcon>🎨</S.OptionIcon>
+            <View>
+              <Icon name="picture" size={32} color={theme.text} />
+            </View>
             <S.OptionContent>
               <S.OptionTitle>Drawing</S.OptionTitle>
               <S.OptionDescription>

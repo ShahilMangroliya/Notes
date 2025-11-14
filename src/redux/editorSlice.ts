@@ -1,6 +1,7 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import type {TextFormatting, DrawingStroke} from '@/types/note';
 import {DEFAULT_TEXT_FORMATTING} from '@/types/note';
+import logger from '@/util/DebugLogger';
 
 /**
  * Text editor state interface
@@ -63,10 +64,12 @@ const editorSlice = createSlice({
   reducers: {
     // Text editor actions
     setSelectedBlockId: (state, action: PayloadAction<string | null>) => {
+      logger.action('editor/setSelectedBlockId', action.payload);
       state.textEditor.selectedBlockId = action.payload;
     },
 
     setTextFormatting: (state, action: PayloadAction<Partial<TextFormatting>>) => {
+      logger.action('editor/setTextFormatting', action.payload);
       state.textEditor.currentFormatting = {
         ...state.textEditor.currentFormatting,
         ...action.payload,
@@ -79,12 +82,14 @@ const editorSlice = createSlice({
       action: PayloadAction<'bold' | 'italic' | 'underline' | 'strikethrough'>,
     ) => {
       const key = action.payload;
+      logger.action('editor/toggleTextFormatting', action.payload);
       state.textEditor.currentFormatting[key] =
         !state.textEditor.currentFormatting[key];
       state.isDirty = true;
     },
 
     resetTextFormatting: state => {
+      logger.action('editor/resetTextFormatting');
       state.textEditor.currentFormatting = DEFAULT_TEXT_FORMATTING;
     },
 
@@ -111,15 +116,20 @@ const editorSlice = createSlice({
 
     // Common actions
     markDirty: state => {
+      logger.action('editor/markDirty');
       state.isDirty = true;
     },
 
     markSaved: state => {
+      logger.action('editor/markSaved');
       state.isDirty = false;
       state.lastSaved = Date.now();
     },
 
-    resetEditor: () => initialState,
+    resetEditor: () => {
+      logger.action('editor/resetEditor');
+      return initialState;
+    },
   },
 });
 
