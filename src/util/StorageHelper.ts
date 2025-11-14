@@ -36,4 +36,20 @@ export const clear = () => {
 
 export default {getItem, setItem, removeItem, clear};
 
+// Storage keys
 export const THEME_STORAGE_KEY = 'notes.theme';
+export const NOTES_LIST_KEY = 'notes.list';
+export const NOTE_PREFIX = 'notes.';
+export const VOICE_LANGUAGE_KEY = 'notes.voice.language';
+export const TTS_RATE_KEY = 'notes.tts.rate';
+export const TTS_PITCH_KEY = 'notes.tts.pitch';
+export const TTS_VOICE_KEY = 'notes.tts.voice';
+
+/**
+ * Helper function to get note storage key
+ * @param noteId - Note ID
+ * @returns Storage key for the note
+ */
+export const getNoteKey = (noteId: string): string => {
+  return `${NOTE_PREFIX}${noteId}`;
+};
