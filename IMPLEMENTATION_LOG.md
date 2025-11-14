@@ -12,8 +12,8 @@
 - [x] Phase 2: Redux State Management (COMPLETE)
 - [x] Phase 3: Utility Helpers (COMPLETE)
 - [x] Phase 4: Base Components (COMPLETE)
-- [ ] Phase 5: Home Screen
-- [ ] Phase 6: Text Editor
+- [x] Phase 5: Home Screen (COMPLETE)
+- [x] Phase 6: Text Editor (COMPLETE)
 - [ ] Phase 7: Drawing & Voice Features
 
 ---
@@ -451,6 +451,229 @@ npm install --save-dev @types/uuid --legacy-peer-deps
 - Index files: ~12 lines (6 × 2 lines each)
 - **Total:** ~665 lines of component code
 
+### Phase 5: Home Screen (05_HOME_SCREEN.md)
+**Status:** ✅ COMPLETE
+**Date:** 2025-11-14
+
+**Files Created:**
+- ✅ `src/components/NoteCard/NoteCard.tsx` - Note preview card (~220 lines)
+- ✅ `src/components/SearchBar/SearchBar.tsx` - Search input component (~90 lines)
+- ✅ `src/components/FilterBar/FilterBar.tsx` - Filter buttons (~110 lines)
+- ✅ `src/hooks/useNotes.ts` - Custom notes hook (~130 lines)
+- ✅ Updated `src/screens/Home/Home.tsx` - Complete home screen (~210 lines)
+- ✅ Updated `src/components/index.ts` - Added new component exports
+- ✅ Updated `src/navigation/Navigation.tsx` - Added TypeScript navigation types
+
+**Components Implemented:**
+
+**NoteCard Component:**
+- **Props:** note, onPress, onLongPress (optional)
+- **Features:**
+  - Displays note title, preview text, and metadata
+  - Shows note type badge (text/drawing)
+  - Pin indicator for pinned notes
+  - Color background from note color
+  - Relative timestamp formatting (e.g., "2h ago")
+  - Preview text extraction from text blocks
+  - Tags display (up to 2 visible + count)
+  - Shadow/elevation for card effect
+  - Accessibility support with hint and label
+- **Preview Logic:** Extracts first 3 lines of text content or shows "Drawing note"
+- **Timestamp:** Smart relative time (seconds, minutes, hours, days, weeks, months, years)
+
+**SearchBar Component:**
+- **Props:** value, onChangeText, placeholder
+- **Features:**
+  - Search icon indicator
+  - Text input with theme-aware placeholder
+  - Clear button (appears when text present)
+  - Themed surface background
+  - Border styling
+  - Accessibility role: search
+  - Auto-hide clear button when empty
+
+**FilterBar Component:**
+- **Props:** activeFilter, onFilterChange, counts (optional)
+- **Features:**
+  - 4 filter buttons: All 📝, Text 📄, Drawing 🎨, Pinned 📌
+  - Active state styling (darker background, bold text)
+  - Count badges showing number of notes in each category
+  - Horizontal scrollable layout
+  - Icon + label for each filter
+  - Accessibility with selection state
+
+**useNotes Custom Hook:**
+- **Returns:** notes, filter, searchQuery, sortBy, isLoading, error, counts, and action methods
+- **Features:**
+  - Integrates with Redux store via selectors
+  - Auto-loads notes on mount
+  - Provides filtered and sorted notes via selectSortedNotes
+  - Provides note counts by type
+  - Exposes actions: setFilter, setSearchQuery, setSortBy, saveNote, deleteNote, togglePin, updateColor
+  - All actions wrapped in useCallback for performance
+
+**Home Screen Implementation:**
+- **Structure:**
+  - SafeAreaContainer wrapper
+  - Header with title, SearchBar, and FilterBar
+  - FlatList of NoteCards
+  - FAB button for creating new notes
+  - Error banner when errors occur
+- **Features:**
+  - Empty states:
+    - "No notes yet" when no notes exist
+    - "No notes found" when search/filter returns empty
+    - Loading state while fetching notes
+  - Uses useNotes hook for state management
+  - Navigation to NoteView when card pressed
+  - Navigation to NoteEditor when FAB pressed
+  - Optimized with useCallback for render functions
+  - Styled-components for theming
+  - FlatList with flexGrow for empty state centering
+
+**Navigation Updates:**
+- Added TypeScript types to Stack.Navigator (RootStackParamList)
+- Fixed route name from "CreateNote" to "NoteEditor" to match types
+- Ensures type safety for navigation params
+
+**Verification:**
+- ✅ TypeScript compiles without errors (`npx tsc --noEmit`)
+- ✅ All components follow styled-components pattern
+- ✅ All imports use `@/` alias pattern
+- ✅ No `any` types used
+- ✅ All components have accessibility support
+- ✅ useNotes hook properly integrates with Redux
+- ✅ Navigation types properly configured
+
+**Line Count:**
+- `NoteCard.tsx`: ~220 lines
+- `SearchBar.tsx`: ~90 lines
+- `FilterBar.tsx`: ~110 lines
+- `useNotes.ts`: ~130 lines
+- `Home.tsx`: ~210 lines (updated)
+- Index files: ~6 lines (3 × 2 lines each)
+- **Total:** ~760 lines of home screen code
+
+### Phase 6: Text Editor (06_TEXT_EDITOR.md)
+**Status:** ✅ COMPLETE
+**Date:** 2025-11-14
+
+**Files Created:**
+- ✅ `src/components/FormatButton/FormatButton.tsx` - Format button for toolbar (~70 lines)
+- ✅ `src/components/FormattingToolbar/FormattingToolbar.tsx` - Text formatting toolbar (~140 lines)
+- ✅ `src/components/BlockTypeSelector/BlockTypeSelector.tsx` - Block type selector (~115 lines)
+- ✅ `src/components/TextBlockEditor/TextBlockEditor.tsx` - Individual text block editor (~135 lines)
+- ✅ `src/hooks/useTextEditor.ts` - Custom text editor hook (~190 lines)
+- ✅ Updated `src/screens/CreateNote/CreateNote.tsx` - Complete text editor screen (~295 lines)
+- ✅ Updated `src/components/index.ts` - Added exports for new components
+
+**Components Implemented:**
+
+**FormatButton Component:**
+- **Props:** children, $active, $disabled, onPress, accessibilityLabel
+- **Features:**
+  - Reusable button for formatting actions
+  - Active state styling (inverted colors)
+  - Disabled state with reduced opacity
+  - Accessibility support with selection state
+- **Use Cases:** Bold, Italic, Underline, Strikethrough, Font size controls
+
+**FormattingToolbar Component:**
+- **Props:** formatting, onToggleBold, onToggleItalic, onToggleUnderline, onToggleStrikethrough, onIncreaseFontSize, onDecreaseFontSize
+- **Features:**
+  - Horizontal scrollable toolbar
+  - 4 formatting buttons: Bold (B), Italic (I), Underline (U), Strikethrough (S)
+  - Font size controls with +/- buttons
+  - Font size display (12-32px range)
+  - Active state for each button based on current formatting
+  - Disabled states for font size limits
+- **Layout:** ScrollView for horizontal overflow handling
+
+**BlockTypeSelector Component:**
+- **Props:** currentType, onTypeChange
+- **Features:**
+  - 5 block type buttons: Paragraph (¶), H1, H2, Bullet (•), Numbered (1.)
+  - Icon + label for each type
+  - Active state styling
+  - Horizontal scrollable layout
+  - Accessibility with selection state
+- **Block Types:** paragraph, heading1, heading2, bullet, numbered
+
+**TextBlockEditor Component:**
+- **Props:** block, onTextChange, onSelect, $isSelected
+- **Features:**
+  - TextInput with live formatting applied
+  - Dynamic styling based on TextFormatting (bold, italic, underline, strikethrough)
+  - Font size and font family support
+  - Background color highlighting
+  - Special styling for headings (H1: 28px bold, H2: 22px bold)
+  - Block type prefixes (bullet: •, numbered: 1.)
+  - Selection indicator (left border when selected)
+  - Multiline input support
+  - Auto-focus on selection
+- **Formatting Applied:** Font size, font family, bold, italic, underline, strikethrough, text color, background color
+
+**useTextEditor Custom Hook:**
+- **Returns:** currentNote, textBlocks, currentFormatting, isDirty, and action methods
+- **Features:**
+  - Integrates with Redux editor and notes state
+  - Provides text blocks from current note
+  - Handles block selection
+  - Text change management with dirty flag
+  - Add/remove blocks
+  - Change block type
+  - Toggle formatting (bold, italic, underline, strikethrough)
+  - Font size adjustment (+2/-2)
+  - Mark as saved/reset editor
+- **Actions:** selectBlock, updateText, addBlock, removeBlock, changeBlockType, toggleFormatting, changeFontSize, markSaved, resetEditor
+- **State Management:** All updates go through Redux with proper version tracking
+
+**Text Editor Screen Implementation:**
+- **Structure:**
+  - Header with back button, title, dirty indicator, and save button
+  - Title input field (max 200 chars)
+  - BlockTypeSelector toolbar
+  - FormattingToolbar
+  - ScrollView with TextBlockEditor components
+  - Add block button at bottom
+- **Features:**
+  - Create new text note on mount
+  - Title editing with state sync
+  - Block selection and editing
+  - Formatting controls (bold, italic, underline, strikethrough, font size)
+  - Block type changing
+  - Add new blocks
+  - Save functionality with dirty tracking
+  - Unsaved changes warning on back
+  - Alert dialogs for save confirmations
+  - Loading state
+  - Uses useTextEditor hook for state management
+- **Navigation:**
+  - Back button with unsaved changes detection
+  - Save button (disabled when no changes)
+  - Dirty indicator (orange dot)
+  - Three-option alert: Discard/Cancel/Save
+
+**Verification:**
+- ✅ TypeScript compiles without errors (`npx tsc --noEmit`)
+- ✅ All components follow styled-components pattern
+- ✅ All imports use `@/` alias pattern
+- ✅ No `any` types used
+- ✅ All components have accessibility support
+- ✅ useTextEditor properly integrates with Redux
+- ✅ Text formatting applies correctly to blocks
+- ✅ Proper TextContent type handling with version tracking
+
+**Line Count:**
+- `FormatButton.tsx`: ~70 lines
+- `FormattingToolbar.tsx`: ~140 lines
+- `BlockTypeSelector.tsx`: ~115 lines
+- `TextBlockEditor.tsx`: ~135 lines
+- `useTextEditor.ts`: ~190 lines
+- `CreateNote.tsx`: ~295 lines (updated)
+- Index files: ~8 lines (4 × 2 lines each)
+- **Total:** ~945 lines of text editor code
+
 ---
 
 ## 🚧 In Progress
@@ -460,12 +683,6 @@ Currently no tasks in progress.
 ---
 
 ## 📝 Pending Tasks
-
-### Phase 5: Home Screen (05_HOME_SCREEN.md)
-**Status:** PENDING
-
-### Phase 6: Text Editor (06_TEXT_EDITOR.md)
-**Status:** PENDING
 
 ### Phase 7: Drawing & Voice (07_DRAWING_VOICE.md)
 **Status:** PENDING
@@ -521,17 +738,21 @@ Currently no tasks in progress.
 - **Total Setup Time:** ~2 minutes
 
 ### Code Statistics (Current)
-- **TypeScript Files:** 22 new (38 total)
+- **TypeScript Files:** 38 new (54 total)
 - **Lines of Code Added:**
   - Phase 1 (Types): ~228 lines
   - Phase 2 (Redux): ~610 lines
   - Phase 3 (Utilities): ~225 lines
   - Phase 4 (Components): ~665 lines
-  - **Total New Code:** ~1,728 lines
-- **Components Created:** 6 (IconButton, Slider, ColorPicker, FAB, Modal, ConfirmDialog)
+  - Phase 5 (Home Screen): ~760 lines
+  - Phase 6 (Text Editor): ~945 lines
+  - **Total New Code:** ~3,433 lines
+- **Components Created:** 13 (IconButton, Slider, ColorPicker, FAB, Modal, ConfirmDialog, NoteCard, SearchBar, FilterBar, FormatButton, FormattingToolbar, BlockTypeSelector, TextBlockEditor)
+- **Custom Hooks:** 4 (useThemeStore, useColorScheme, useNotes, useTextEditor)
 - **Utility Functions:** 8 (note creation, validation, permissions, UUID)
 - **Redux Slices:** 4 (theme, notes, editor, voice)
 - **Async Thunks:** 3 (loadNotes, saveNote, deleteNote)
+- **Screens Implemented:** 2 (Home, NoteEditor/CreateNote)
 - **Tests Created:** 0
 
 ---
@@ -564,12 +785,26 @@ Currently no tasks in progress.
    - ✅ Modal - Base modal wrapper
    - ✅ ConfirmDialog - Confirmation dialog
 
-5. **NEXT:** Build home screen
-   - NoteCard component
-   - SearchBar component
-   - FilterBar component
-   - useNotes custom hook
-   - Home screen layout
+5. ✅ **COMPLETED:** Build home screen
+   - ✅ NoteCard component
+   - ✅ SearchBar component
+   - ✅ FilterBar component
+   - ✅ useNotes custom hook
+   - ✅ Home screen layout
+
+6. ✅ **COMPLETED:** Text Editor implementation
+   - ✅ FormatButton component
+   - ✅ FormattingToolbar with bold, italic, underline, strikethrough, font size
+   - ✅ BlockTypeSelector with paragraph, headings, bullet, numbered
+   - ✅ TextBlockEditor with live formatting
+   - ✅ useTextEditor hook for state management
+   - ✅ Complete text editor screen with save functionality
+
+7. **NEXT:** Drawing & Voice Features
+   - Drawing canvas with Skia
+   - Drawing tools (pencil, eraser)
+   - Voice recording and playback
+   - Speech-to-text integration
 
 ---
 
@@ -635,5 +870,5 @@ Currently no tasks in progress.
 
 ---
 
-**Last Updated:** 2025-11-14 (Phase 4 Complete)
-**Next Review:** After Phase 5 completion
+**Last Updated:** 2025-11-14 (Phase 6 Complete)
+**Next Review:** After Phase 7 completion

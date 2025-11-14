@@ -45,3 +45,40 @@ export type {ModalProps} from './Modal/Modal';
 // ConfirmDialog
 export {ConfirmDialog, default as ConfirmDialogDefault} from './ConfirmDialog';
 export type {ConfirmDialogProps} from './ConfirmDialog/ConfirmDialog';
+
+// NoteCard
+export {NoteCard, default as NoteCardDefault} from './NoteCard';
+export type {NoteCardProps} from './NoteCard/NoteCard';
+
+// SearchBar
+export {SearchBar, default as SearchBarDefault} from './SearchBar';
+export type {SearchBarProps} from './SearchBar/SearchBar';
+
+// FilterBar
+export {FilterBar, default as FilterBarDefault} from './FilterBar';
+export type {FilterBarProps} from './FilterBar/FilterBar';
+
+// FormatButton
+export {FormatButton, default as FormatButtonDefault} from './FormatButton';
+export type {FormatButtonProps} from './FormatButton/FormatButton';
+
+// FormattingToolbar
+export {
+  FormattingToolbar,
+  default as FormattingToolbarDefault,
+} from './FormattingToolbar';
+export type {FormattingToolbarProps} from './FormattingToolbar/FormattingToolbar';
+
+// BlockTypeSelector
+export {
+  BlockTypeSelector,
+  default as BlockTypeSelectorDefault,
+} from './BlockTypeSelector';
+export type {BlockTypeSelectorProps} from './BlockTypeSelector/BlockTypeSelector';
+
+// TextBlockEditor
+export {
+  TextBlockEditor,
+  default as TextBlockEditorDefault,
+} from './TextBlockEditor';
+export type {TextBlockEditorProps} from './TextBlockEditor/TextBlockEditor';

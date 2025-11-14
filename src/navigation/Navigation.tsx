@@ -5,8 +5,9 @@ import {useTheme} from 'styled-components/native';
 import CreateNote from '@/screens/CreateNote/CreateNote';
 import Home from '@/screens/Home/Home';
 import useThemeStore from '@/hooks/useThemeStore';
+import type {RootStackParamList} from '@/types/navigation';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const Navigation = () => {
   const {isDarkMode} = useThemeStore();
@@ -27,7 +28,7 @@ const Navigation = () => {
       initialRouteName="Home"
     >
       <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="CreateNote" component={CreateNote} />
+      <Stack.Screen name="NoteEditor" component={CreateNote} />
     </Stack.Navigator>
   );
 };
