@@ -38,19 +38,19 @@ const AppContent = () => {
               fonts: {
                 regular: {
                   fontFamily: 'System',
-                  fontWeight: '400' as const,
+                  fontWeight: '400',
                 },
                 medium: {
                   fontFamily: 'System',
-                  fontWeight: '500' as const,
+                  fontWeight: '500',
                 },
                 bold: {
                   fontFamily: 'System',
-                  fontWeight: '700' as const,
+                  fontWeight: '700',
                 },
                 heavy: {
                   fontFamily: 'System',
-                  fontWeight: '800' as const,
+                  fontWeight: '800',
                 },
               },
             }}

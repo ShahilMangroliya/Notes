@@ -1,6 +1,5 @@
 import React, {useState, useCallback} from 'react';
 import {FlatList} from 'react-native';
-import styled from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import SearchBar from '@/components/SearchBar';
 import FilterBar from '@/components/FilterBar';
@@ -11,111 +10,7 @@ import StyledText from '@/components/Text';
 import useNotes from '@/hooks/useNotes';
 import type {HomeScreenProps} from '@/types/navigation';
 import type {Note} from '@/types/note';
-
-const Container = styled.View`
-  flex: 1;
-`;
-
-const Header = styled.View`
-  padding: 16px;
-  gap: 12px;
-  background-color: ${props => props.theme.background};
-  border-bottom-width: 1px;
-  border-bottom-color: ${props => props.theme.border};
-`;
-
-const Title = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
-  color: ${props => props.theme.text};
-  margin-bottom: 8px;
-`;
-
-const ListContainer = styled.View`
-  flex: 1;
-  background-color: ${props => props.theme.background};
-`;
-
-const EmptyContainer = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-`;
-
-const EmptyIcon = styled.Text`
-  font-size: 64px;
-  margin-bottom: 16px;
-`;
-
-const EmptyTitle = styled.Text`
-  font-size: 20px;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-  margin-bottom: 8px;
-  text-align: center;
-`;
-
-const EmptySubtitle = styled.Text`
-  font-size: 16px;
-  color: ${props => props.theme.textSecondary};
-  text-align: center;
-`;
-
-const CreateButton = styled.Text`
-  font-size: 40px;
-  color: ${props => props.theme.text};
-`;
-
-const LoadingContainer = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ErrorContainer = styled.View`
-  padding: 16px;
-  background-color: #ff3b3033;
-  margin: 16px;
-  border-radius: 8px;
-`;
-
-const ErrorText = styled.Text`
-  color: #ff3b30;
-  font-size: 14px;
-  text-align: center;
-`;
-
-const OptionButton = styled.TouchableOpacity`
-  background-color: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 12px;
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
-`;
-
-const OptionIcon = styled.Text`
-  font-size: 32px;
-`;
-
-const OptionContent = styled.View`
-  flex: 1;
-`;
-
-const OptionTitle = styled.Text`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-  margin-bottom: 4px;
-`;
-
-const OptionDescription = styled.Text`
-  font-size: 14px;
-  color: ${props => props.theme.textSecondary};
-`;
+import * as S from './styles';
 
 /**
  * Home screen displaying list of notes
@@ -159,9 +54,9 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
   const renderEmptyState = useCallback(() => {
     if (isLoading) {
       return (
-        <LoadingContainer>
+        <S.LoadingContainer>
           <StyledText>Loading notes...</StyledText>
-        </LoadingContainer>
+        </S.LoadingContainer>
       );
     }
 
@@ -171,25 +66,25 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
 
     if (hasNoNotes) {
       return (
-        <EmptyContainer>
-          <EmptyIcon>📝</EmptyIcon>
-          <EmptyTitle>No notes yet</EmptyTitle>
-          <EmptySubtitle>
+        <S.EmptyContainer>
+          <S.EmptyIcon>📝</S.EmptyIcon>
+          <S.EmptyTitle>No notes yet</S.EmptyTitle>
+          <S.EmptySubtitle>
             Tap the + button to create your first note
-          </EmptySubtitle>
-        </EmptyContainer>
+          </S.EmptySubtitle>
+        </S.EmptyContainer>
       );
     }
 
     if (hasSearchQuery || hasFilter) {
       return (
-        <EmptyContainer>
-          <EmptyIcon>🔍</EmptyIcon>
-          <EmptyTitle>No notes found</EmptyTitle>
-          <EmptySubtitle>
+        <S.EmptyContainer>
+          <S.EmptyIcon>🔍</S.EmptyIcon>
+          <S.EmptyTitle>No notes found</S.EmptyTitle>
+          <S.EmptySubtitle>
             Try adjusting your search or filter
-          </EmptySubtitle>
-        </EmptyContainer>
+          </S.EmptySubtitle>
+        </S.EmptyContainer>
       );
     }
 
@@ -198,24 +93,24 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
 
   return (
     <SafeAreaContainer>
-      <Container>
-        <Header>
-          <Title>Notes</Title>
+      <S.Container>
+        <S.Header>
+          <S.Title>Notes</S.Title>
           <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
           <FilterBar
             activeFilter={filter}
             onFilterChange={setFilter}
             counts={counts}
           />
-        </Header>
+        </S.Header>
 
         {error && (
-          <ErrorContainer>
-            <ErrorText>{error}</ErrorText>
-          </ErrorContainer>
+          <S.ErrorContainer>
+            <S.ErrorText>{error}</S.ErrorText>
+          </S.ErrorContainer>
         )}
 
-        <ListContainer>
+        <S.ListContainer>
           <FlatList
             data={notes}
             renderItem={renderNoteCard}
@@ -227,13 +122,13 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
             ListEmptyComponent={renderEmptyState}
             showsVerticalScrollIndicator={false}
           />
-        </ListContainer>
+        </S.ListContainer>
 
         <FAB
           onPress={() => setShowCreateMenu(true)}
           accessibilityLabel="Create new note"
         >
-          <CreateButton>+</CreateButton>
+          <S.CreateButton>+</S.CreateButton>
         </FAB>
 
         <Modal
@@ -241,33 +136,33 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
           onClose={() => setShowCreateMenu(false)}
           title="Create New Note"
         >
-          <OptionButton
+          <S.OptionButton
             onPress={() => handleCreateNote('text')}
             accessibilityLabel="Create text note"
           >
-            <OptionIcon>📝</OptionIcon>
-            <OptionContent>
-              <OptionTitle>Text Note</OptionTitle>
-              <OptionDescription>
+            <S.OptionIcon>📝</S.OptionIcon>
+            <S.OptionContent>
+              <S.OptionTitle>Text Note</S.OptionTitle>
+              <S.OptionDescription>
                 Create a note with formatted text
-              </OptionDescription>
-            </OptionContent>
-          </OptionButton>
+              </S.OptionDescription>
+            </S.OptionContent>
+          </S.OptionButton>
 
-          <OptionButton
+          <S.OptionButton
             onPress={() => handleCreateNote('drawing')}
             accessibilityLabel="Create drawing note"
           >
-            <OptionIcon>🎨</OptionIcon>
-            <OptionContent>
-              <OptionTitle>Drawing</OptionTitle>
-              <OptionDescription>
+            <S.OptionIcon>🎨</S.OptionIcon>
+            <S.OptionContent>
+              <S.OptionTitle>Drawing</S.OptionTitle>
+              <S.OptionDescription>
                 Create a note with freehand drawing
-              </OptionDescription>
-            </OptionContent>
-          </OptionButton>
+              </S.OptionDescription>
+            </S.OptionContent>
+          </S.OptionButton>
         </Modal>
-      </Container>
+      </S.Container>
     </SafeAreaContainer>
   );
 };

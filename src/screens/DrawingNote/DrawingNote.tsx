@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {ScrollView, Alert} from 'react-native';
-import styled from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import DrawingToolbar from '@/components/DrawingToolbar';
 import DrawingCanvas from '@/components/DrawingCanvas';
@@ -11,77 +10,7 @@ import {setCurrentNote, saveNote} from '@/redux/notesSlice';
 import useDrawingEditor from '@/hooks/useDrawingEditor';
 import type {NoteEditorScreenProps} from '@/types/navigation';
 import {NOTE_COLORS} from '@/types/note';
-
-const Container = styled.View`
-  flex: 1;
-`;
-
-const Header = styled.View`
-  background-color: ${props => props.theme.background};
-  border-bottom-width: 1px;
-  border-bottom-color: ${props => props.theme.border};
-  padding: 12px 16px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const HeaderLeft = styled.View`
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-`;
-
-const HeaderRight = styled.View`
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-`;
-
-const BackButton = styled.Text`
-  font-size: 20px;
-`;
-
-const HeaderTitle = styled.Text`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-`;
-
-const SaveButton = styled.Text`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-`;
-
-const DirtyIndicator = styled.View`
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background-color: #ff9500;
-`;
-
-const TitleInput = styled.TextInput.attrs(props => ({
-  placeholderTextColor: props.theme.textSecondary,
-}))`
-  font-size: 24px;
-  font-weight: bold;
-  color: ${props => props.theme.text};
-  padding: 16px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${props => props.theme.border};
-`;
-
-const CanvasContainer = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  background-color: ${props => props.theme.background};
-`;
-
-const ToolbarContainer = styled.View`
-  max-height: 400px;
-`;
+import * as S from './styles';
 
 /**
  * Drawing Editor screen for creating and editing drawing notes
@@ -116,10 +45,12 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   // Initialize note
   useEffect(() => {
     if (!noteId && noteType === 'drawing') {
+      // Create new note
       const newNote = createDrawingNote('');
       dispatch(setCurrentNote(newNote));
     }
-    // TODO: Load existing note if noteId is provided
+    // If noteId is provided, note is already loaded by NoteView
+    // No additional action needed
   }, [noteId, noteType, dispatch]);
 
   // Sync title with current note
@@ -176,43 +107,43 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   if (!currentNote || noteType !== 'drawing') {
     return (
       <SafeAreaContainer>
-        <Header>
-          <HeaderTitle>Loading...</HeaderTitle>
-        </Header>
+        <S.Header>
+          <S.HeaderTitle>Loading...</S.HeaderTitle>
+        </S.Header>
       </SafeAreaContainer>
     );
   }
 
   return (
     <SafeAreaContainer>
-      <Container>
-        <Header>
-          <HeaderLeft>
+      <S.Container>
+        <S.Header>
+          <S.HeaderLeft>
             <IconButton onPress={handleBack} accessibilityLabel="Go back">
-              <BackButton>←</BackButton>
+              <S.BackButton>←</S.BackButton>
             </IconButton>
-            <HeaderTitle>Drawing</HeaderTitle>
-            {isDirty && <DirtyIndicator />}
-          </HeaderLeft>
-          <HeaderRight>
+            <S.HeaderTitle>Drawing</S.HeaderTitle>
+            {isDirty && <S.DirtyIndicator />}
+          </S.HeaderLeft>
+          <S.HeaderRight>
             <IconButton
               onPress={handleSave}
               $disabled={!isDirty}
               accessibilityLabel="Save drawing"
             >
-              <SaveButton>Save</SaveButton>
+              <S.SaveButton>Save</S.SaveButton>
             </IconButton>
-          </HeaderRight>
-        </Header>
+          </S.HeaderRight>
+        </S.Header>
 
-        <TitleInput
+        <S.TitleInput
           value={title}
           onChangeText={setTitle}
           placeholder="Drawing title"
           maxLength={200}
         />
 
-        <CanvasContainer>
+        <S.CanvasContainer>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -232,9 +163,9 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
               onTouchEnd={onTouchEnd}
             />
           </ScrollView>
-        </CanvasContainer>
+        </S.CanvasContainer>
 
-        <ToolbarContainer>
+        <S.ToolbarContainer>
           <DrawingToolbar
             selectedTool={selectedTool}
             brushSize={brushSize}
@@ -247,8 +178,8 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
             onClear={handleClear}
             canUndo={canUndo}
           />
-        </ToolbarContainer>
-      </Container>
+        </S.ToolbarContainer>
+      </S.Container>
     </SafeAreaContainer>
   );
 };

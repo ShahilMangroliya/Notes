@@ -60,23 +60,13 @@ export const TitleInput = styled.TextInput.attrs(props => ({
   border-bottom-color: ${props => props.theme.border};
 `;
 
-export const EditorContainer = styled.View`
+export const CanvasContainer = styled.View`
   flex: 1;
-`;
-
-export const BlocksContainer = styled.View`
-  padding-bottom: 100px;
-`;
-
-export const AddBlockButton = styled.TouchableOpacity`
-  padding: 16px;
   align-items: center;
-  border-top-width: 1px;
-  border-top-color: ${props => props.theme.border};
-  background-color: ${props => props.theme.surface};
+  justify-content: center;
+  background-color: ${props => props.theme.background};
 `;
 
-export const AddBlockText = styled.Text`
-  color: ${props => props.theme.textSecondary};
-  font-size: 14px;
+export const ToolbarContainer = styled.View`
+  max-height: 400px;
 `;

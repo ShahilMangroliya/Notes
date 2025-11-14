@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {ScrollView, Alert} from 'react-native';
-import styled from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import FormattingToolbar from '@/components/FormattingToolbar';
 import BlockTypeSelector from '@/components/BlockTypeSelector';
@@ -8,91 +7,10 @@ import TextBlockEditor from '@/components/TextBlockEditor';
 import IconButton from '@/components/IconButton';
 import {createTextNote} from '@/util/NoteHelper';
 import {useAppDispatch} from '@/hooks/hooks';
-import {setCurrentNote} from '@/redux/notesSlice';
-import {saveNote} from '@/redux/notesSlice';
+import {setCurrentNote, saveNote} from '@/redux/notesSlice';
 import useTextEditor from '@/hooks/useTextEditor';
 import type {NoteEditorScreenProps} from '@/types/navigation';
-
-const Container = styled.View`
-  flex: 1;
-`;
-
-const Header = styled.View`
-  background-color: ${props => props.theme.background};
-  border-bottom-width: 1px;
-  border-bottom-color: ${props => props.theme.border};
-  padding: 12px 16px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const HeaderLeft = styled.View`
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-`;
-
-const HeaderRight = styled.View`
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-`;
-
-const BackButton = styled.Text`
-  font-size: 20px;
-`;
-
-const HeaderTitle = styled.Text`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-`;
-
-const SaveButton = styled.Text`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-`;
-
-const DirtyIndicator = styled.View`
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background-color: #ff9500;
-`;
-
-const TitleInput = styled.TextInput.attrs(props => ({
-  placeholderTextColor: props.theme.textSecondary,
-}))`
-  font-size: 24px;
-  font-weight: bold;
-  color: ${props => props.theme.text};
-  padding: 16px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${props => props.theme.border};
-`;
-
-const EditorContainer = styled.View`
-  flex: 1;
-`;
-
-const BlocksContainer = styled.View`
-  padding-bottom: 100px;
-`;
-
-const AddBlockButton = styled.TouchableOpacity`
-  padding: 16px;
-  align-items: center;
-  border-top-width: 1px;
-  border-top-color: ${props => props.theme.border};
-  background-color: ${props => props.theme.surface};
-`;
-
-const AddBlockText = styled.Text`
-  color: ${props => props.theme.textSecondary};
-  font-size: 14px;
-`;
+import * as S from './styles';
 
 /**
  * Text Editor screen for creating and editing text notes
@@ -122,14 +40,19 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   // Initialize note
   useEffect(() => {
     if (!noteId && noteType === 'text') {
+      // Create new note
       const newNote = createTextNote('');
       dispatch(setCurrentNote(newNote));
       if (newNote.type === 'text' && 'blocks' in newNote.content) {
         setSelectedBlockId(newNote.content.blocks[0].id);
       }
+    } else if (noteId && currentNote) {
+      // Load existing note - already loaded by NoteView
+      if (currentNote.type === 'text' && 'blocks' in currentNote.content) {
+        setSelectedBlockId(currentNote.content.blocks[0].id);
+      }
     }
-    // TODO: Load existing note if noteId is provided
-  }, [noteId, noteType, dispatch]);
+  }, [noteId, noteType, currentNote, dispatch]);
 
   // Sync title with current note
   useEffect(() => {
@@ -144,7 +67,11 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
         'Unsaved Changes',
         'You have unsaved changes. Do you want to save before leaving?',
         [
-          {text: 'Discard', style: 'destructive', onPress: () => navigation.goBack()},
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => navigation.goBack(),
+          },
           {text: 'Cancel', style: 'cancel'},
           {
             text: 'Save',
@@ -204,7 +131,7 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   }, [changeFontSize]);
 
   const handleChangeBlockType = useCallback(
-    (blockType: typeof textBlocks[0]['blockType']) => {
+    (blockType: (typeof textBlocks)[0]['blockType']) => {
       if (selectedBlockId) {
         changeBlockType(selectedBlockId, blockType);
       }
@@ -213,41 +140,43 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   );
 
   const currentBlockType =
-    selectedBlockId && textBlocks.find(b => b.id === selectedBlockId)?.blockType || 'paragraph';
+    (selectedBlockId &&
+      textBlocks.find(b => b.id === selectedBlockId)?.blockType) ||
+    'paragraph';
 
   if (!currentNote || noteType !== 'text') {
     return (
       <SafeAreaContainer>
-        <Header>
-          <HeaderTitle>Loading...</HeaderTitle>
-        </Header>
+        <S.Header>
+          <S.HeaderTitle>Loading...</S.HeaderTitle>
+        </S.Header>
       </SafeAreaContainer>
     );
   }
 
   return (
     <SafeAreaContainer>
-      <Container>
-        <Header>
-          <HeaderLeft>
+      <S.Container>
+        <S.Header>
+          <S.HeaderLeft>
             <IconButton onPress={handleBack} accessibilityLabel="Go back">
-              <BackButton>←</BackButton>
+              <S.BackButton>←</S.BackButton>
             </IconButton>
-            <HeaderTitle>Edit Note</HeaderTitle>
-            {isDirty && <DirtyIndicator />}
-          </HeaderLeft>
-          <HeaderRight>
+            <S.HeaderTitle>Edit Note</S.HeaderTitle>
+            {isDirty && <S.DirtyIndicator />}
+          </S.HeaderLeft>
+          <S.HeaderRight>
             <IconButton
               onPress={handleSave}
               $disabled={!isDirty}
               accessibilityLabel="Save note"
             >
-              <SaveButton>Save</SaveButton>
+              <S.SaveButton>Save</S.SaveButton>
             </IconButton>
-          </HeaderRight>
-        </Header>
+          </S.HeaderRight>
+        </S.Header>
 
-        <TitleInput
+        <S.TitleInput
           value={title}
           onChangeText={setTitle}
           placeholder="Note title"
@@ -269,9 +198,9 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           onDecreaseFontSize={handleDecreaseFontSize}
         />
 
-        <EditorContainer>
+        <S.EditorContainer>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <BlocksContainer>
+            <S.BlocksContainer>
               {textBlocks.map(block => (
                 <TextBlockEditor
                   key={block.id}
@@ -281,14 +210,14 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
                   $isSelected={selectedBlockId === block.id}
                 />
               ))}
-            </BlocksContainer>
+            </S.BlocksContainer>
 
-            <AddBlockButton onPress={() => addBlock()}>
-              <AddBlockText>+ Add Block</AddBlockText>
-            </AddBlockButton>
+            <S.AddBlockButton onPress={() => addBlock()}>
+              <S.AddBlockText>+ Add Block</S.AddBlockText>
+            </S.AddBlockButton>
           </ScrollView>
-        </EditorContainer>
-      </Container>
+        </S.EditorContainer>
+      </S.Container>
     </SafeAreaContainer>
   );
 };
