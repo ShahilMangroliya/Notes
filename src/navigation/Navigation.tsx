@@ -2,7 +2,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React, {useEffect} from 'react';
 import {StatusBar} from 'react-native';
 import {useTheme} from 'styled-components/native';
-import CreateNote from '@/screens/CreateNote/CreateNote';
+import NoteEditor from '@/screens/NoteEditor/NoteEditor';
 import Home from '@/screens/Home/Home';
 import useThemeStore from '@/hooks/useThemeStore';
 import type {RootStackParamList} from '@/types/navigation';
@@ -28,7 +28,7 @@ const Navigation = () => {
       initialRouteName="Home"
     >
       <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="NoteEditor" component={CreateNote} />
+      <Stack.Screen name="NoteEditor" component={NoteEditor} />
     </Stack.Navigator>
   );
 };

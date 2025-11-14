@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import type {TextFormatting, Point} from '@/types/note';
+import type {TextFormatting, DrawingStroke} from '@/types/note';
 import {DEFAULT_TEXT_FORMATTING} from '@/types/note';
 
 /**
@@ -21,7 +21,7 @@ export interface DrawingEditorState {
   brushSize: number;
   brushColor: string;
   isDrawing: boolean;
-  currentStroke: Point[] | null;
+  currentStroke: DrawingStroke | null;
   history: unknown[]; // Will be properly typed later with undo/redo system
   historyIndex: number;
 }
@@ -105,7 +105,7 @@ const editorSlice = createSlice({
       state.drawingEditor.isDrawing = action.payload;
     },
 
-    setCurrentStroke: (state, action: PayloadAction<Point[] | null>) => {
+    setCurrentStroke: (state, action: PayloadAction<DrawingStroke | null>) => {
       state.drawingEditor.currentStroke = action.payload;
     },
 

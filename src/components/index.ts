@@ -82,3 +82,18 @@ export {
   default as TextBlockEditorDefault,
 } from './TextBlockEditor';
 export type {TextBlockEditorProps} from './TextBlockEditor/TextBlockEditor';
+
+// DrawingToolbar
+export {
+  DrawingToolbar,
+  default as DrawingToolbarDefault,
+} from './DrawingToolbar';
+export type {DrawingToolbarProps} from './DrawingToolbar/DrawingToolbar';
+
+// DrawingCanvas
+export {DrawingCanvas, default as DrawingCanvasDefault} from './DrawingCanvas';
+export type {DrawingCanvasProps} from './DrawingCanvas/DrawingCanvas';
+
+// VoiceRecorder
+export {VoiceRecorder, default as VoiceRecorderDefault} from './VoiceRecorder';
+export type {VoiceRecorderProps} from './VoiceRecorder/VoiceRecorder';

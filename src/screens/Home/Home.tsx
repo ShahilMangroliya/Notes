@@ -1,11 +1,12 @@
 import React, {useState, useCallback} from 'react';
-import {FlatList, View} from 'react-native';
+import {FlatList} from 'react-native';
 import styled from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import SearchBar from '@/components/SearchBar';
 import FilterBar from '@/components/FilterBar';
 import NoteCard from '@/components/NoteCard';
 import FAB from '@/components/FAB';
+import Modal from '@/components/Modal';
 import StyledText from '@/components/Text';
 import useNotes from '@/hooks/useNotes';
 import type {HomeScreenProps} from '@/types/navigation';
@@ -83,6 +84,37 @@ const ErrorText = styled.Text`
   color: #ff3b30;
   font-size: 14px;
   text-align: center;
+`;
+
+const OptionButton = styled.TouchableOpacity`
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+`;
+
+const OptionIcon = styled.Text`
+  font-size: 32px;
+`;
+
+const OptionContent = styled.View`
+  flex: 1;
+`;
+
+const OptionTitle = styled.Text`
+  font-size: 18px;
+  font-weight: 600;
+  color: ${props => props.theme.text};
+  margin-bottom: 4px;
+`;
+
+const OptionDescription = styled.Text`
+  font-size: 14px;
+  color: ${props => props.theme.textSecondary};
 `;
 
 /**
@@ -198,11 +230,43 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
         </ListContainer>
 
         <FAB
-          onPress={() => handleCreateNote('text')}
+          onPress={() => setShowCreateMenu(true)}
           accessibilityLabel="Create new note"
         >
           <CreateButton>+</CreateButton>
         </FAB>
+
+        <Modal
+          visible={showCreateMenu}
+          onClose={() => setShowCreateMenu(false)}
+          title="Create New Note"
+        >
+          <OptionButton
+            onPress={() => handleCreateNote('text')}
+            accessibilityLabel="Create text note"
+          >
+            <OptionIcon>📝</OptionIcon>
+            <OptionContent>
+              <OptionTitle>Text Note</OptionTitle>
+              <OptionDescription>
+                Create a note with formatted text
+              </OptionDescription>
+            </OptionContent>
+          </OptionButton>
+
+          <OptionButton
+            onPress={() => handleCreateNote('drawing')}
+            accessibilityLabel="Create drawing note"
+          >
+            <OptionIcon>🎨</OptionIcon>
+            <OptionContent>
+              <OptionTitle>Drawing</OptionTitle>
+              <OptionDescription>
+                Create a note with freehand drawing
+              </OptionDescription>
+            </OptionContent>
+          </OptionButton>
+        </Modal>
       </Container>
     </SafeAreaContainer>
   );
