@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {Alert, Platform, Keyboard} from 'react-native';
+import {Platform, Keyboard} from 'react-native';
 import {useTheme} from 'styled-components/native';
 import {RichEditor} from 'react-native-pell-rich-editor';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
@@ -9,7 +9,8 @@ import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
 import {createTextNote} from '@/util/NoteHelper';
 import {useAppDispatch, useAppSelector} from '@/hooks/hooks';
-import {setCurrentNote, saveNote} from '@/redux/notesSlice';
+import {setCurrentNote} from '@/redux/notesSlice';
+import useAutoSave from '@/hooks/useAutoSave';
 import type {NoteEditorScreenProps} from '@/types/navigation';
 import logger from '@/util/DebugLogger';
 import * as S from './styles';
@@ -19,6 +20,7 @@ import * as S from './styles';
  *
  * Features:
  * - Inline rich text editing (WYSIWYG)
+ * - Auto-save as you type (debounced)
  * - No Edit/Preview mode - see formatting as you type
  * - Works like Google Docs, Word, Samsung Notes
  * - Formatting toolbar always accessible
@@ -33,11 +35,31 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   logger.component('CreateNote', 'render', {noteId, noteType});
 
   const currentNote = useAppSelector(state => state.notes.currentNote);
-  const isDirty = useAppSelector(state => state.editor.isDirty);
   const [title, setTitle] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isTitleFocused, setIsTitleFocused] = useState(false);
+
+  // Create updated note object for auto-save (memoized to prevent re-renders)
+  const noteToSave = React.useMemo(() => {
+    if (!currentNote) return null;
+    return {
+      ...currentNote,
+      title,
+      content: {
+        ...(currentNote.content as any),
+        html: htmlContent,
+        text: htmlContent,
+      },
+    };
+  }, [currentNote, title, htmlContent]);
+
+  // Auto-save hook - saves after 1.5 seconds of inactivity
+  const {isSaving, saveNow} = useAutoSave(
+    noteToSave,
+    [title, htmlContent],
+    {delay: 1500},
+  );
 
   // Initialize note - only run once per mount
   useEffect(() => {
@@ -133,69 +155,12 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     };
   }, []);
 
-  const handleBack = useCallback(() => {
-    logger.callback('CreateNote', 'handleBack', {isDirty});
-    if (isDirty) {
-      Alert.alert(
-        'Unsaved Changes',
-        'You have unsaved changes. Do you want to save before leaving?',
-        [
-          {
-            text: 'Discard',
-            style: 'destructive',
-            onPress: () => {
-              logger.callback('CreateNote', 'handleBack.discard');
-              navigation.goBack();
-            },
-          },
-          {text: 'Cancel', style: 'cancel'},
-          {
-            text: 'Save',
-            onPress: async () => {
-              logger.callback('CreateNote', 'handleBack.save');
-              if (currentNote) {
-                // Save HTML content
-                const updatedNote = {
-                  ...currentNote,
-                  title,
-                  content: {
-                    ...(currentNote.content as any),
-                    html: htmlContent,
-                    text: htmlContent, // Also store as text for now
-                  },
-                };
-                await dispatch(saveNote(updatedNote));
-                navigation.goBack();
-              }
-            },
-          },
-        ],
-      );
-    } else {
-      navigation.goBack();
-    }
-  }, [isDirty, currentNote, title, htmlContent, navigation, dispatch]);
-
-  const handleSave = useCallback(async () => {
-    logger.callback('CreateNote', 'handleSave', {
-      noteId: currentNote?.id,
-      title,
-    });
-    if (currentNote) {
-      // Save HTML content
-      const updatedNote = {
-        ...currentNote,
-        title,
-        content: {
-          ...(currentNote.content as any),
-          html: htmlContent,
-          text: htmlContent, // Also store as text for now
-        },
-      };
-      await dispatch(saveNote(updatedNote));
-      Alert.alert('Saved', 'Note saved successfully');
-    }
-  }, [currentNote, title, htmlContent, dispatch]);
+  const handleBack = useCallback(async () => {
+    logger.callback('CreateNote', 'handleBack');
+    // Save immediately before leaving
+    await saveNow();
+    navigation.goBack();
+  }, [navigation, saveNow]);
 
   const handleContentChange = useCallback((html: string) => {
     logger.callback('CreateNote', 'handleContentChange', {
@@ -223,15 +188,9 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
               <Icon name="arrow-left" size={24} color={theme.text} />
             </IconButton>
             <S.HeaderTitle>Edit Note</S.HeaderTitle>
-            {isDirty && <S.DirtyIndicator />}
           </S.HeaderLeft>
           <S.HeaderRight>
-            <IconButton
-              onPress={handleSave}
-              $disabled={!isDirty}
-              accessibilityLabel="Save note">
-              <S.SaveButton>Save</S.SaveButton>
-            </IconButton>
+            {isSaving && <S.SavingIndicator>Saving...</S.SavingIndicator>}
           </S.HeaderRight>
         </S.Header>
 

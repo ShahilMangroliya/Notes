@@ -8,14 +8,16 @@ import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
 import {createDrawingNote} from '@/util/NoteHelper';
 import {useAppDispatch} from '@/hooks/hooks';
-import {setCurrentNote, saveNote} from '@/redux/notesSlice';
+import {setCurrentNote} from '@/redux/notesSlice';
 import useDrawingEditor from '@/hooks/useDrawingEditor';
+import useAutoSave from '@/hooks/useAutoSave';
 import type {NoteEditorScreenProps} from '@/types/navigation';
 import {NOTE_COLORS} from '@/types/note';
 import * as S from './styles';
 
 /**
  * Drawing Editor screen for creating and editing drawing notes
+ * Features auto-save functionality
  */
 const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   const dispatch = useAppDispatch();
@@ -30,7 +32,6 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     brushSize,
     brushColor,
     currentStroke,
-    isDirty,
     canUndo,
     setTool,
     setBrushSize,
@@ -44,6 +45,22 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   } = useDrawingEditor();
 
   const [title, setTitle] = useState('');
+
+  // Create updated note object for auto-save (memoized to prevent re-renders)
+  const noteToSave = React.useMemo(() => {
+    if (!currentNote) return null;
+    return {
+      ...currentNote,
+      title,
+    };
+  }, [currentNote, title]);
+
+  // Auto-save hook - saves after 1.5 seconds of inactivity
+  const {isSaving, saveNow} = useAutoSave(
+    noteToSave,
+    [title, strokes.length],
+    {delay: 1500},
+  );
 
   // Initialize note
   useEffect(() => {
@@ -63,42 +80,12 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     }
   }, [currentNote]);
 
-  const handleBack = useCallback(() => {
-    if (isDirty) {
-      Alert.alert(
-        'Unsaved Changes',
-        'You have unsaved changes. Do you want to save before leaving?',
-        [
-          {
-            text: 'Discard',
-            style: 'destructive',
-            onPress: () => navigation.goBack(),
-          },
-          {text: 'Cancel', style: 'cancel'},
-          {
-            text: 'Save',
-            onPress: async () => {
-              if (currentNote) {
-                await dispatch(saveNote({...currentNote, title}));
-                markSaved();
-                navigation.goBack();
-              }
-            },
-          },
-        ],
-      );
-    } else {
-      navigation.goBack();
-    }
-  }, [isDirty, currentNote, title, navigation, dispatch, markSaved]);
-
-  const handleSave = useCallback(async () => {
-    if (currentNote) {
-      await dispatch(saveNote({...currentNote, title}));
-      markSaved();
-      Alert.alert('Saved', 'Drawing saved successfully');
-    }
-  }, [currentNote, title, dispatch, markSaved]);
+  const handleBack = useCallback(async () => {
+    // Save immediately before leaving
+    await saveNow();
+    markSaved();
+    navigation.goBack();
+  }, [navigation, saveNow, markSaved]);
 
   const handleClear = useCallback(() => {
     Alert.alert(
@@ -130,16 +117,9 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
               <Icon name="arrow-left" size={24} color={theme.text} />
             </IconButton>
             <S.HeaderTitle>Drawing</S.HeaderTitle>
-            {isDirty && <S.DirtyIndicator />}
           </S.HeaderLeft>
           <S.HeaderRight>
-            <IconButton
-              onPress={handleSave}
-              $disabled={!isDirty}
-              accessibilityLabel="Save drawing"
-            >
-              <S.SaveButton>Save</S.SaveButton>
-            </IconButton>
+            {isSaving && <S.SavingIndicator>Saving...</S.SavingIndicator>}
           </S.HeaderRight>
         </S.Header>
 

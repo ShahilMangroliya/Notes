@@ -1,17 +1,18 @@
-import React, {useState, useCallback} from 'react';
-import {FlatList, View} from 'react-native';
-import {useTheme} from 'styled-components/native';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import FAB from '@/components/FAB';
+import FilterBar from '@/components/FilterBar';
+import Icon from '@/components/Icon';
+import Modal from '@/components/Modal';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import SearchBar from '@/components/SearchBar';
-import FilterBar from '@/components/FilterBar';
-import NoteCard from '@/components/NoteCard';
-import FAB from '@/components/FAB';
-import Modal from '@/components/Modal';
-import Icon from '@/components/Icon';
+import SwipeableNoteCard from '@/components/SwipeableNoteCard';
 import StyledText from '@/components/Text';
 import useNotes from '@/hooks/useNotes';
 import type {HomeScreenProps} from '@/types/navigation';
 import type {Note} from '@/types/note';
+import React, {useCallback, useState} from 'react';
+import {FlatList, View} from 'react-native';
+import {useTheme} from 'styled-components/native';
 import * as S from './styles';
 
 /**
@@ -28,9 +29,12 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
     counts,
     setFilter,
     setSearchQuery,
+    deleteNote,
   } = useNotes();
 
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
   const handleNotePress = useCallback(
     (noteId: string) => {
@@ -47,11 +51,43 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
     [navigation],
   );
 
+  const handleDeleteRequest = useCallback((noteId: string) => {
+    setNoteToDelete(noteId);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (noteToDelete) {
+      deleteNote(noteToDelete);
+      setShowDeleteDialog(false);
+      setNoteToDelete(null);
+    }
+  }, [noteToDelete, deleteNote]);
+
+  const handleCancelDelete = useCallback(() => {
+    setShowDeleteDialog(false);
+    setNoteToDelete(null);
+  }, []);
+
+  const handleNoteLongPress = useCallback(
+    (noteId: string) => {
+      const note = notes.find(n => n.id === noteId);
+      if (!note) return;
+      handleDeleteRequest(noteId);
+    },
+    [notes, handleDeleteRequest],
+  );
+
   const renderNoteCard = useCallback(
     ({item}: {item: Note}) => (
-      <NoteCard note={item} onPress={handleNotePress} />
+      <SwipeableNoteCard
+        note={item}
+        onPress={handleNotePress}
+        onLongPress={handleNoteLongPress}
+        onDelete={handleDeleteRequest}
+      />
     ),
-    [handleNotePress],
+    [handleNotePress, handleNoteLongPress, handleDeleteRequest],
   );
 
   const renderEmptyState = useCallback(() => {
@@ -174,6 +210,17 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
             </S.OptionContent>
           </S.OptionButton>
         </Modal>
+
+        <ConfirmDialog
+          visible={showDeleteDialog}
+          title="Delete Note?"
+          message="This note will be permanently deleted. This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          $destructive={true}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
       </S.Container>
     </SafeAreaContainer>
   );

@@ -1035,5 +1035,117 @@ None - all core implementation phases complete!
 
 ---
 
-**Last Updated:** 2025-11-14 (Phase 7 Complete - All Implementation Done)
+## 🗑️ Additional Features
+
+### Note Deletion Feature
+**Status:** ✅ COMPLETE
+**Date:** 2025-11-17
+
+**Features Added:**
+1. **Swipe to Delete**
+   - Created `SwipeableNoteCard` component wrapping `NoteCard`
+   - Left swipe gesture reveals delete button
+   - Smooth animation using `react-native-gesture-handler`
+   - Red delete button with delete icon and text label
+   - Improved styling with proper alignment and padding
+
+2. **Long Press Delete**
+   - Long press on note card shows native Alert with delete option
+   - Provides quick access to delete without swiping
+
+3. **Delete Confirmation**
+   - `ConfirmDialog` component shows confirmation modal
+   - Prevents accidental deletion
+   - Clear messaging: "This note will be permanently deleted. This action cannot be undone."
+   - Destructive button styling (red) for delete action
+
+4. **Redux Integration**
+   - Delete action already existed in `notesSlice.ts`
+   - Removes note from storage (MMKV)
+   - Updates notes list in Redux state
+   - Clears current note if it's being deleted
+
+5. **Timestamps**
+   - Notes already include `createdAt` and `updatedAt` timestamps
+   - Set automatically via `NoteHelper.createTextNote()` and `NoteHelper.createDrawingNote()`
+   - Updated via `updateNoteTimestamp()` helper
+   - Redux automatically updates `updatedAt` on note modifications
+
+**Files Created:**
+- `src/components/SwipeableNoteCard/SwipeableNoteCard.tsx`
+- `src/components/SwipeableNoteCard/index.ts`
+
+**Files Modified:**
+- `src/screens/Home/Home.tsx` - Added swipeable cards, long press handler, and delete confirmation
+
+**TypeScript Status:**
+- ✅ No TypeScript errors
+- ✅ All types properly defined
+- ✅ Strict mode compliance
+
+**Dependencies:**
+- Uses existing `react-native-gesture-handler` (already installed)
+- Uses existing `react-native-reanimated` (already installed)
+- `GestureHandlerRootView` already configured in `App.tsx`
+
+---
+
+### Auto-Save Feature
+**Status:** ✅ COMPLETE
+**Date:** 2025-11-17
+
+**Features Added:**
+1. **Auto-Save Hook (`useAutoSave`)**
+   - Custom React hook with debounced auto-save functionality
+   - Configurable delay (default: 1500ms / 1.5 seconds)
+   - Saves automatically after user stops editing
+   - Prevents excessive saves during rapid edits
+   - Provides `isSaving` state for UI feedback
+   - Provides `saveNow()` method for immediate save
+
+2. **Text Editor Auto-Save**
+   - Removed manual "Save" button
+   - Removed "Unsaved Changes" alert
+   - Auto-saves when title or content changes
+   - Shows "Saving..." indicator during save
+   - Saves immediately when navigating back
+
+3. **Drawing Editor Auto-Save**
+   - Removed manual "Save" button
+   - Removed "Unsaved Changes" alert
+   - Auto-saves when title changes or new strokes added
+   - Shows "Saving..." indicator during save
+   - Saves immediately when navigating back
+
+4. **User Experience Improvements**
+   - Seamless editing like Google Docs
+   - No need to manually save
+   - Subtle "Saving..." indicator in header
+   - Changes persist automatically
+   - No interruption to workflow
+
+**Files Created:**
+- `src/hooks/useAutoSave.ts` - Custom auto-save hook with debouncing
+
+**Files Modified:**
+- `src/screens/CreateNote/CreateNote.tsx` - Integrated auto-save, removed save button
+- `src/screens/CreateNote/styles.ts` - Added `SavingIndicator` style
+- `src/screens/DrawingNote/DrawingNote.tsx` - Integrated auto-save, removed save button
+- `src/screens/DrawingNote/styles.ts` - Added `SavingIndicator` style
+
+**Technical Details:**
+- Debounce delay: 1500ms (1.5 seconds)
+- Uses `updateCurrentNote` action to update Redux state
+- Uses `saveNote` async thunk to persist to storage
+- Skips auto-save on initial mount
+- Clears timeout on unmount to prevent memory leaks
+
+**TypeScript Status:**
+- ✅ No TypeScript errors
+- ✅ All types properly defined
+- ✅ Strict mode compliance
+
+---
+
+**Last Updated:** 2025-11-17 (Added Auto-Save Feature)
 **Next Review:** After device testing

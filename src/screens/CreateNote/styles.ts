@@ -50,6 +50,13 @@ export const SaveButton = styled.Text`
   color: ${props => props.theme.primary};
 `;
 
+export const SavingIndicator = styled.Text`
+  font-size: 13px;
+  font-weight: 500;
+  color: ${props => props.theme.textSecondary};
+  opacity: 0.7;
+`;
+
 export const DirtyIndicator = styled.View`
   width: 6px;
   height: 6px;

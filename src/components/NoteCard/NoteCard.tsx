@@ -141,16 +141,50 @@ const formatRelativeTime = (timestamp: number): string => {
 };
 
 /**
+ * Strip HTML tags from a string
+ */
+const stripHtmlTags = (html: string): string => {
+  return html
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&') // Replace &amp; with &
+    .replace(/&lt;/g, '<') // Replace &lt; with <
+    .replace(/&gt;/g, '>') // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'") // Replace &#39; with '
+    .replace(/\s+/g, ' ') // Collapse multiple spaces
+    .trim();
+};
+
+/**
  * Extract preview text from note content
  */
 const getPreviewText = (note: Note): string => {
   if (note.type === 'text') {
     const textContent = note.content as TextContent;
-    const text = textContent.blocks
-      ?.map(block => block.text)
-      .join(' ')
-      .trim();
-    return text || 'Empty note';
+
+    // Try HTML content first (new format)
+    if ((textContent as any).html) {
+      const plainText = stripHtmlTags((textContent as any).html);
+      if (plainText) return plainText;
+    }
+
+    // Try plain text content
+    if (textContent.text) {
+      const plainText = stripHtmlTags(textContent.text);
+      if (plainText) return plainText;
+    }
+
+    // Fall back to blocks (legacy format)
+    if (textContent.blocks && textContent.blocks.length > 0) {
+      const text = textContent.blocks
+        .map(block => block.text)
+        .join(' ')
+        .trim();
+      if (text) return text;
+    }
+
+    return 'Empty note';
   }
   return 'Drawing note';
 };

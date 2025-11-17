@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {Text, Animated} from 'react-native';
 import styled from 'styled-components/native';
+import {useTheme} from 'styled-components/native';
 import {RichEditor, RichToolbar, actions} from 'react-native-pell-rich-editor';
 
 /**
@@ -20,8 +21,7 @@ const Container = styled(Animated.View)`
   background-color: ${props => props.theme.surface};
   border-top-width: 1px;
   border-top-color: ${props => props.theme.border};
-  padding-vertical: 8px;
-  padding-bottom: 12px;
+  padding: 8px 0 12px;
 `;
 
 /**
@@ -46,7 +46,13 @@ const Container = styled(Animated.View)`
 export const InlineFormattingToolbar: React.FC<
   InlineFormattingToolbarProps
 > = ({editorRef, keyboardHeight = 0}) => {
+  const theme = useTheme();
   const bottomAnim = useRef(new Animated.Value(0)).current;
+
+  // Theme-aware colors
+  const unselectedColor = theme.textSecondary; // Light grey in both themes
+  const selectedColor = '#007AFF'; // iOS blue
+  const disabledColor = theme.border; // Subtle grey
 
   useEffect(() => {
     Animated.timing(bottomAnim, {
@@ -55,6 +61,44 @@ export const InlineFormattingToolbar: React.FC<
       useNativeDriver: false,
     }).start();
   }, [keyboardHeight, bottomAnim]);
+
+  const toggleHeading1 = () => {
+    // Toggle H1: if already H1, convert to paragraph
+    editorRef.current?.injectJavascript(
+      `(function() {
+        var selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          var node = selection.anchorNode;
+          var element = node.nodeType === 3 ? node.parentElement : node;
+          var h1 = element.closest('h1');
+          if (h1) {
+            document.execCommand('formatBlock', false, 'p');
+          } else {
+            document.execCommand('formatBlock', false, 'h1');
+          }
+        }
+      })();`,
+    );
+  };
+
+  const toggleHeading2 = () => {
+    // Toggle H2: if already H2, convert to paragraph
+    editorRef.current?.injectJavascript(
+      `(function() {
+        var selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          var node = selection.anchorNode;
+          var element = node.nodeType === 3 ? node.parentElement : node;
+          var h2 = element.closest('h2');
+          if (h2) {
+            document.execCommand('formatBlock', false, 'p');
+          } else {
+            document.execCommand('formatBlock', false, 'h2');
+          }
+        }
+      })();`,
+    );
+  };
 
   return (
     <Container style={{bottom: bottomAnim}}>
@@ -70,6 +114,15 @@ export const InlineFormattingToolbar: React.FC<
           actions.insertBulletsList,
           actions.insertOrderedList,
         ]}
+        onPressAddImage={() => {}}
+        onInsertLink={() => {}}
+        iconTint={unselectedColor}
+        selectedIconTint={selectedColor}
+        disabledIconTint={disabledColor}
+        unselectedButtonStyle={{backgroundColor: 'transparent'}}
+        selectedButtonStyle={{backgroundColor: 'transparent'}}
+        heading1={toggleHeading1}
+        heading2={toggleHeading2}
         iconMap={{
           [actions.setBold]: ({tintColor}: {tintColor: string}) => (
             <Text style={{color: tintColor, fontWeight: 'bold', fontSize: 18}}>
@@ -116,8 +169,6 @@ export const InlineFormattingToolbar: React.FC<
           backgroundColor: 'transparent',
           minHeight: 50,
         }}
-        selectedIconTint="#007AFF"
-        unselectedIconTint="#8E8E93"
       />
     </Container>
   );
