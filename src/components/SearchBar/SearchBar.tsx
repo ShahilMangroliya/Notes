@@ -21,11 +21,13 @@ const Container = styled.View`
   flex-direction: row;
   align-items: center;
   padding: 14px 18px;
-  shadow-color: #000;
-  shadow-offset: 0px 1px;
-  shadow-opacity: 0.02;
-  shadow-radius: 4px;
-  elevation: 1;
+  ${() => `
+    shadow-color: #000;
+    shadow-offset: 0px 1px;
+    shadow-opacity: 0.02;
+    shadow-radius: 4px;
+    elevation: 1;
+  `}
 `;
 
 const IconContainer = styled.View`

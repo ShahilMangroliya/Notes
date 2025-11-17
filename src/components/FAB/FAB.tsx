@@ -25,8 +25,14 @@ export interface FABProps {
 
 const StyledFAB = styled.TouchableOpacity<FABProps>`
   position: absolute;
-  bottom: ${props => (props.$bottom !== undefined ? `${props.$bottom}px` : '24px')};
-  right: ${props => (props.$right !== undefined ? `${props.$right}px` : props.$left === undefined ? '24px' : 'auto')};
+  bottom: ${props =>
+    props.$bottom !== undefined ? `${props.$bottom}px` : '24px'};
+  right: ${props =>
+    props.$right !== undefined
+      ? `${props.$right}px`
+      : props.$left === undefined
+      ? '24px'
+      : 'auto'};
   left: ${props => (props.$left !== undefined ? `${props.$left}px` : 'auto')};
   width: ${props => {
     if (props.$size === 'small') return '48px';
@@ -46,11 +52,13 @@ const StyledFAB = styled.TouchableOpacity<FABProps>`
   background-color: ${props => props.theme.primary};
   align-items: center;
   justify-content: center;
-  shadow-color: #000;
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.3;
-  shadow-radius: 4.65px;
-  elevation: 8;
+  ${() => `
+    shadow-color: #000;
+    shadow-offset: 0px 4px;
+    shadow-opacity: 0.3;
+    shadow-radius: 4.65px;
+    elevation: 8;
+  `}
   opacity: ${props => (props.$disabled ? 0.5 : 1)};
 `;
 
