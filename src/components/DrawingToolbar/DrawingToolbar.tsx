@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
 import styled from 'styled-components/native';
 import {useTheme} from 'styled-components/native';
@@ -116,6 +116,16 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
 }) => {
   const theme = useTheme();
 
+  const scrollContentStyle = useMemo(
+    () => ({
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 12,
+      paddingHorizontal: 4,
+    }),
+    [],
+  );
+
   return (
     <Container>
       <ToolRow>
@@ -124,12 +134,7 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              paddingHorizontal: 4,
-            }}
+            contentContainerStyle={scrollContentStyle}
           >
             {colors?.map(color => (
               <ColorButton

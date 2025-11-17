@@ -1,5 +1,5 @@
-import React, {useEffect, useRef} from 'react';
-import {Text, Animated} from 'react-native';
+import React, {useEffect, useMemo, useRef} from 'react';
+import {Animated} from 'react-native';
 import styled from 'styled-components/native';
 import {useTheme} from 'styled-components/native';
 import {RichEditor, RichToolbar, actions} from 'react-native-pell-rich-editor';
@@ -23,6 +23,88 @@ const Container = styled(Animated.View)`
   border-top-color: ${props => props.theme.border};
   padding: 8px 0 12px;
 `;
+
+const IconText = styled.Text<{
+  $tintColor: string;
+  $fontWeight?: string;
+  $fontSize: number;
+  $fontStyle?: string;
+  $textDecorationLine?: string;
+}>`
+  color: ${props => props.$tintColor};
+  font-weight: ${props => props.$fontWeight || 'normal'};
+  font-size: ${props => props.$fontSize}px;
+  font-style: ${props => props.$fontStyle || 'normal'};
+  text-decoration-line: ${props => props.$textDecorationLine || 'none'};
+`;
+
+interface IconComponentProps {
+  tintColor: string;
+}
+
+const BoldIcon: React.FC<IconComponentProps> = ({tintColor}) => (
+  <IconText $tintColor={tintColor} $fontWeight="bold" $fontSize={18}>
+    B
+  </IconText>
+);
+
+const ItalicIcon: React.FC<IconComponentProps> = ({tintColor}) => (
+  <IconText $tintColor={tintColor} $fontStyle="italic" $fontSize={18}>
+    I
+  </IconText>
+);
+
+const UnderlineIcon: React.FC<IconComponentProps> = ({tintColor}) => (
+  <IconText
+    $tintColor={tintColor}
+    $fontSize={18}
+    $textDecorationLine="underline"
+  >
+    U
+  </IconText>
+);
+
+const StrikethroughIcon: React.FC<IconComponentProps> = ({tintColor}) => (
+  <IconText
+    $tintColor={tintColor}
+    $fontSize={18}
+    $textDecorationLine="line-through"
+  >
+    S
+  </IconText>
+);
+
+const Heading1Icon: React.FC<IconComponentProps> = ({tintColor}) => (
+  <IconText $tintColor={tintColor} $fontWeight="bold" $fontSize={20}>
+    H1
+  </IconText>
+);
+
+const Heading2Icon: React.FC<IconComponentProps> = ({tintColor}) => (
+  <IconText $tintColor={tintColor} $fontWeight="bold" $fontSize={18}>
+    H2
+  </IconText>
+);
+
+// Icon map factory functions - defined outside component to avoid "components during render" warning
+const createBoldIcon = (tintColor: string) => (
+  <BoldIcon tintColor={tintColor} />
+);
+const createItalicIcon = (tintColor: string) => (
+  <ItalicIcon tintColor={tintColor} />
+);
+const createUnderlineIcon = (tintColor: string) => (
+  <UnderlineIcon tintColor={tintColor} />
+);
+const createStrikethroughIcon = (tintColor: string) => (
+  <StrikethroughIcon tintColor={tintColor} />
+);
+const createHeading1Icon = (tintColor: string) => (
+  <Heading1Icon tintColor={tintColor} />
+);
+const createHeading2Icon = (tintColor: string) => (
+  <Heading2Icon tintColor={tintColor} />
+);
 
 /**
  * InlineFormattingToolbar - Formatting toolbar for inline rich text editor
@@ -100,8 +182,48 @@ export const InlineFormattingToolbar: React.FC<
     );
   };
 
+  const buttonStyle = useMemo(
+    () => ({
+      backgroundColor: 'transparent' as const,
+    }),
+    [],
+  );
+
+  const toolbarStyle = useMemo(
+    () => ({
+      backgroundColor: 'transparent' as const,
+      minHeight: 50,
+    }),
+    [],
+  );
+
+  const containerStyle = useMemo(
+    () => ({
+      bottom: bottomAnim,
+    }),
+    [bottomAnim],
+  );
+
+  const iconMap = useMemo(
+    () => ({
+      [actions.setBold]: ({tintColor}: {tintColor: string}) =>
+        createBoldIcon(tintColor),
+      [actions.setItalic]: ({tintColor}: {tintColor: string}) =>
+        createItalicIcon(tintColor),
+      [actions.setUnderline]: ({tintColor}: {tintColor: string}) =>
+        createUnderlineIcon(tintColor),
+      [actions.setStrikethrough]: ({tintColor}: {tintColor: string}) =>
+        createStrikethroughIcon(tintColor),
+      [actions.heading1]: ({tintColor}: {tintColor: string}) =>
+        createHeading1Icon(tintColor),
+      [actions.heading2]: ({tintColor}: {tintColor: string}) =>
+        createHeading2Icon(tintColor),
+    }),
+    [],
+  );
+
   return (
-    <Container style={{bottom: bottomAnim}}>
+    <Container style={containerStyle}>
       <RichToolbar
         getEditor={() => editorRef.current}
         actions={[
@@ -119,56 +241,12 @@ export const InlineFormattingToolbar: React.FC<
         iconTint={unselectedColor}
         selectedIconTint={selectedColor}
         disabledIconTint={disabledColor}
-        unselectedButtonStyle={{backgroundColor: 'transparent'}}
-        selectedButtonStyle={{backgroundColor: 'transparent'}}
+        unselectedButtonStyle={buttonStyle}
+        selectedButtonStyle={buttonStyle}
         heading1={toggleHeading1}
         heading2={toggleHeading2}
-        iconMap={{
-          [actions.setBold]: ({tintColor}: {tintColor: string}) => (
-            <Text style={{color: tintColor, fontWeight: 'bold', fontSize: 18}}>
-              B
-            </Text>
-          ),
-          [actions.setItalic]: ({tintColor}: {tintColor: string}) => (
-            <Text style={{color: tintColor, fontStyle: 'italic', fontSize: 18}}>
-              I
-            </Text>
-          ),
-          [actions.setUnderline]: ({tintColor}: {tintColor: string}) => (
-            <Text
-              style={{
-                color: tintColor,
-                fontSize: 18,
-                textDecorationLine: 'underline',
-              }}>
-              U
-            </Text>
-          ),
-          [actions.setStrikethrough]: ({tintColor}: {tintColor: string}) => (
-            <Text
-              style={{
-                color: tintColor,
-                fontSize: 18,
-                textDecorationLine: 'line-through',
-              }}>
-              S
-            </Text>
-          ),
-          [actions.heading1]: ({tintColor}: {tintColor: string}) => (
-            <Text style={{color: tintColor, fontWeight: 'bold', fontSize: 20}}>
-              H1
-            </Text>
-          ),
-          [actions.heading2]: ({tintColor}: {tintColor: string}) => (
-            <Text style={{color: tintColor, fontWeight: 'bold', fontSize: 18}}>
-              H2
-            </Text>
-          ),
-        }}
-        style={{
-          backgroundColor: 'transparent',
-          minHeight: 50,
-        }}
+        iconMap={iconMap}
+        style={toolbarStyle}
       />
     </Container>
   );

@@ -2,15 +2,17 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import FAB from '@/components/FAB';
 import FilterBar from '@/components/FilterBar';
 import Icon from '@/components/Icon';
+import IconButton from '@/components/IconButton';
 import Modal from '@/components/Modal';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import SearchBar from '@/components/SearchBar';
 import SwipeableNoteCard from '@/components/SwipeableNoteCard';
 import StyledText from '@/components/Text';
 import useNotes from '@/hooks/useNotes';
+import useThemeStore from '@/hooks/useThemeStore';
 import type {HomeScreenProps} from '@/types/navigation';
 import type {Note} from '@/types/note';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, View} from 'react-native';
 import {useTheme} from 'styled-components/native';
 import * as S from './styles';
@@ -20,6 +22,7 @@ import * as S from './styles';
  */
 const Home: React.FC<HomeScreenProps> = ({navigation}) => {
   const theme = useTheme();
+  const {currentTheme, setTheme} = useThemeStore();
   const {
     notes,
     filter,
@@ -68,6 +71,37 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
     setShowDeleteDialog(false);
     setNoteToDelete(null);
   }, []);
+
+  const handleThemeToggle = useCallback(() => {
+    // Cycle through: light -> dark -> system -> light
+    if (currentTheme === 'light') {
+      setTheme('dark');
+    } else if (currentTheme === 'dark') {
+      setTheme('system');
+    } else {
+      setTheme('light');
+    }
+  }, [currentTheme, setTheme]);
+
+  const getThemeIcon = useCallback(() => {
+    if (currentTheme === 'light') {
+      return 'sun';
+    }
+    if (currentTheme === 'dark') {
+      return 'moon';
+    }
+    return 'bulb';
+  }, [currentTheme]);
+
+  const getThemeLabel = useCallback(() => {
+    if (currentTheme === 'light') {
+      return 'Switch to dark mode';
+    }
+    if (currentTheme === 'dark') {
+      return 'Switch to system theme';
+    }
+    return 'Switch to light mode';
+  }, [currentTheme]);
 
   const handleNoteLongPress = useCallback(
     (noteId: string) => {
@@ -133,11 +167,36 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, counts, searchQuery, filter]);
 
+  const listContentStyle = useMemo(
+    () => ({
+      padding: 16,
+      flexGrow: 1,
+      backgroundColor: theme.background,
+    }),
+    [theme.background],
+  );
+
+  const listStyle = useMemo(
+    () => ({
+      backgroundColor: theme.background,
+    }),
+    [theme.background],
+  );
+
   return (
     <SafeAreaContainer>
       <S.Container>
         <S.Header>
-          <S.Title>Notes</S.Title>
+          <S.HeaderRow>
+            <S.Title>Notes</S.Title>
+            <IconButton
+              onPress={handleThemeToggle}
+              accessibilityLabel={getThemeLabel()}
+              $circular
+            >
+              <Icon name={getThemeIcon()} size={24} color={theme.text} />
+            </IconButton>
+          </S.HeaderRow>
           <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
           <FilterBar
             activeFilter={filter}
@@ -157,22 +216,19 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
             data={notes}
             renderItem={renderNoteCard}
             keyExtractor={item => item.id}
-            contentContainerStyle={{
-              padding: 16,
-              flexGrow: 1,
-              backgroundColor: theme.background,
-            }}
+            contentContainerStyle={listContentStyle}
             ListEmptyComponent={renderEmptyState}
             showsVerticalScrollIndicator={false}
-            style={{backgroundColor: theme.background}}
+            style={listStyle}
           />
         </S.ListContainer>
 
         <FAB
+          $size="large"
           onPress={() => setShowCreateMenu(true)}
           accessibilityLabel="Create new note"
         >
-          <Icon name="plus" size={40} color={theme.text} />
+          <Icon name="plus" size={32} color="#FFFFFF" />
         </FAB>
 
         <Modal

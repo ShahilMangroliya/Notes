@@ -28,7 +28,6 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   const {
     currentNote,
     strokes,
-    canvasSize,
     selectedTool,
     brushSize,
     brushColor,

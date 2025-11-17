@@ -10,6 +10,12 @@ export const Header = styled.View`
   background-color: ${props => props.theme.background};
 `;
 
+export const HeaderRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
 export const Title = styled.Text`
   font-size: 32px;
   font-weight: 700;
@@ -74,11 +80,13 @@ export const OptionButton = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
   gap: 16px;
-  shadow-color: #000;
-  shadow-offset: 0px 1px;
-  shadow-opacity: 0.03;
-  shadow-radius: 6px;
-  elevation: 1;
+  ${() => `
+    shadow-color: #000;
+    shadow-offset: 0px 1px;
+    shadow-opacity: 0.03;
+    shadow-radius: 6px;
+    elevation: 1;
+  `}
 `;
 
 // OptionIcon removed - using Icon component directly
