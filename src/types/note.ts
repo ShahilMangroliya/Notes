@@ -153,14 +153,16 @@ export const DEFAULT_CANVAS_SIZE: CanvasSize = {
  * Predefined note colors
  */
 export const NOTE_COLORS = [
+  '#000000', // Black
   '#FFFFFF', // White
-  '#FFE5E5', // Light Red
-  '#FFF4E5', // Light Orange
-  '#FFFBE5', // Light Yellow
-  '#E5F7E5', // Light Green
-  '#E5F7FF', // Light Blue
-  '#F0E5FF', // Light Purple
-  '#FFE5F9', // Light Pink
+  '#808080', // Gray
+  '#FF3B30', // Red
+  '#FF9500', // Orange
+  '#FFCC00', // Yellow
+  '#34C759', // Green
+  '#007AFF', // Blue
+  '#AF52DE', // Purple
+  '#FF2D55', // Pink
 ] as const;
 
 /**

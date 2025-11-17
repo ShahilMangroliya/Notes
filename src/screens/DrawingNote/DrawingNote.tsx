@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {ScrollView, Alert} from 'react-native';
+import {Alert, useWindowDimensions} from 'react-native';
 import {useTheme} from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import DrawingToolbar from '@/components/DrawingToolbar';
@@ -23,6 +23,7 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   const dispatch = useAppDispatch();
   const {noteId, noteType} = route.params;
   const theme = useTheme();
+  const dimensions = useWindowDimensions();
 
   const {
     currentNote,
@@ -46,6 +47,13 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
 
   const [title, setTitle] = useState('');
 
+  // Calculate responsive canvas size that fits the screen
+  // Account for: header (~60px) + title input (~70px) + toolbar (~60px) = ~190px
+  const responsiveCanvasSize = {
+    width: dimensions.width,
+    height: Math.max(400, dimensions.height - 190),
+  };
+
   // Create updated note object for auto-save (memoized to prevent re-renders)
   const noteToSave = React.useMemo(() => {
     if (!currentNote) return null;
@@ -55,10 +63,11 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     };
   }, [currentNote, title]);
 
-  // Auto-save hook - saves after 1.5 seconds of inactivity
+  // Auto-save hook - only saves title, not drawing content
+  // Drawing content is saved when user navigates back
   const {isSaving, saveNow} = useAutoSave(
     noteToSave,
-    [title, strokes.length],
+    [title], // Only auto-save when title changes, not when drawing
     {delay: 1500},
   );
 
@@ -131,25 +140,15 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
         />
 
         <S.CanvasContainer>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <DrawingCanvas
-              strokes={strokes}
-              currentStroke={currentStroke}
-              width={canvasSize.width}
-              height={canvasSize.height}
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
-            />
-          </ScrollView>
+          <DrawingCanvas
+            strokes={strokes}
+            currentStroke={currentStroke}
+            width={responsiveCanvasSize.width}
+            height={responsiveCanvasSize.height}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          />
         </S.CanvasContainer>
 
         <S.ToolbarContainer>

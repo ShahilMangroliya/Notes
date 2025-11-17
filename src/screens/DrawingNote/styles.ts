@@ -76,5 +76,5 @@ export const CanvasContainer = styled.View`
 `;
 
 export const ToolbarContainer = styled.View`
-  max-height: 400px;
+  /* Minimal toolbar - let content determine height */
 `;

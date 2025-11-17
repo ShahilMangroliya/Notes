@@ -1,9 +1,13 @@
-import React, {useCallback, useMemo} from 'react';
-import {Canvas, Path, Skia, useCanvasRef} from '@shopify/react-native-skia';
-import {StyleSheet} from 'react-native';
-import styled from 'styled-components/native';
+// @refresh reset
 import type {DrawingStroke, Point} from '@/types/note';
+import React, {useMemo} from 'react';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+import Svg, {Path} from 'react-native-svg';
+import styled from 'styled-components/native';
 
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 /**
  * Props for DrawingCanvas component
  */
@@ -29,19 +33,20 @@ export interface DrawingCanvasProps {
 const CanvasContainer = styled.View<{$width: number; $height: number}>`
   width: ${props => props.$width}px;
   height: ${props => props.$height}px;
-  background-color: ${props => props.theme.surface};
+  background-color: #ffffff;
+  border: 2px solid ${props => props.theme.border};
 `;
 
 /**
- * Convert points array to SKPath
+ * Convert points array to SVG Path data
  */
 const pointsToPath = (points: Point[]): string => {
   if (points.length === 0) return '';
 
-  let pathData = `M ${points[0].x} ${points[0].y}`;
+  let pathData = `M ${points[0].x},${points[0].y}`;
 
   for (let i = 1; i < points.length; i++) {
-    pathData += ` L ${points[i].x} ${points[i].y}`;
+    pathData += ` L ${points[i].x},${points[i].y}`;
   }
 
   return pathData;
@@ -73,26 +78,23 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   onTouchMove,
   onTouchEnd,
 }) => {
-  const canvasRef = useCanvasRef();
-
-  const handleTouch = useCallback(
-    (event: any) => {
-      const {locationX, locationY} = event.nativeEvent;
-      const point: Point = {x: locationX, y: locationY};
-
-      switch (event.nativeEvent.type) {
-        case 'topTouchStart':
+  // Create pan gesture - use runOnJS() to run callbacks on JS thread
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .runOnJS(true)
+        .onStart((event: any) => {
+          const point: Point = {x: event.x, y: event.y};
           onTouchStart(point);
-          break;
-        case 'topTouchMove':
+        })
+        .onChange((event: any) => {
+          const point: Point = {x: event.x, y: event.y};
           onTouchMove(point);
-          break;
-        case 'topTouchEnd':
-        case 'topTouchCancel':
+        })
+        .onEnd(() => {
           onTouchEnd();
-          break;
-      }
-    },
+        })
+        .minDistance(0),
     [onTouchStart, onTouchMove, onTouchEnd],
   );
 
@@ -102,70 +104,56 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       const pathData = pointsToPath(stroke.points);
       if (!pathData) return null;
 
-      const path = Skia.Path.MakeFromSVGString(pathData);
-      if (!path) return null;
-
       return (
-        <Path
+        <AnimatedPath
           key={stroke.id}
-          path={path}
-          color={stroke.color}
-          style="stroke"
+          d={pathData}
+          stroke={stroke.color}
           strokeWidth={stroke.width}
-          strokeCap="round"
-          strokeJoin="round"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
         />
       );
     });
   }, [strokes]);
 
   // Render current stroke being drawn
-  const renderedCurrentStroke = useMemo(() => {
-    if (!currentStroke || currentStroke.points.length === 0) return null;
+  const renderCurrentStroke = () => {
+    if (!currentStroke || currentStroke.points.length === 0) {
+      return null;
+    }
 
     const pathData = pointsToPath(currentStroke.points);
-    if (!pathData) return null;
-
-    const path = Skia.Path.MakeFromSVGString(pathData);
-    if (!path) return null;
+    if (!pathData) {
+      return null;
+    }
 
     return (
-      <Path
-        path={path}
-        color={currentStroke.color}
-        style="stroke"
+      <AnimatedPath
+        key={`current-${currentStroke.id}-${currentStroke.points.length}`}
+        d={pathData}
+        stroke={currentStroke.color}
         strokeWidth={currentStroke.width}
-        strokeCap="round"
-        strokeJoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
       />
     );
-  }, [currentStroke]);
+  };
 
   return (
-    <CanvasContainer
-      $width={width}
-      $height={height}
-      onStartShouldSetResponder={() => true}
-      onMoveShouldSetResponder={() => true}
-      onResponderGrant={handleTouch}
-      onResponderMove={handleTouch}
-      onResponderRelease={handleTouch}
-      onResponderTerminate={handleTouch}
-    >
-      <Canvas ref={canvasRef} style={{width, height}}>
-        {/* Background */}
-        <Path
-          path={Skia.Path.Make().addRect(Skia.XYWHRect(0, 0, width, height))}
-          color={backgroundColor}
-        />
+    <GestureDetector gesture={panGesture}>
+      <CanvasContainer $width={width} $height={height}>
+        <AnimatedSvg width={width} height={height} style={{backgroundColor}}>
+          {/* Completed strokes */}
+          {renderedStrokes}
 
-        {/* Completed strokes */}
-        {renderedStrokes}
-
-        {/* Current stroke */}
-        {renderedCurrentStroke}
-      </Canvas>
-    </CanvasContainer>
+          {/* Current stroke */}
+          {renderCurrentStroke()}
+        </AnimatedSvg>
+      </CanvasContainer>
+    </GestureDetector>
   );
 };
 

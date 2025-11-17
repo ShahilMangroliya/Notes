@@ -2,10 +2,7 @@ import React from 'react';
 import {ScrollView} from 'react-native';
 import styled from 'styled-components/native';
 import {useTheme} from 'styled-components/native';
-import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
-import Slider from '@/components/Slider';
-import ColorPicker from '@/components/ColorPicker';
 
 /**
  * Props for DrawingToolbar component
@@ -40,71 +37,47 @@ export interface DrawingToolbarProps {
 const Container = styled.View`
   background-color: ${props => props.theme.surface};
   border-top-width: 1px;
-  border-bottom-width: 1px;
   border-color: ${props => props.theme.border};
-  padding: 12px;
-`;
-
-const Section = styled.View`
-  margin-bottom: 12px;
-`;
-
-const SectionTitle = styled.Text`
-  color: ${props => props.theme.textSecondary};
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  text-transform: uppercase;
+  padding: 8px 12px;
 `;
 
 const ToolRow = styled.View`
   flex-direction: row;
-  gap: 8px;
   align-items: center;
-`;
-
-const ToolButton = styled.TouchableOpacity<{$active: boolean}>`
-  background-color: ${props =>
-    props.$active ? props.theme.background : props.theme.surface};
-  border: 2px solid
-    ${props => (props.$active ? props.theme.text : props.theme.border)};
-  border-radius: 8px;
-  padding: 12px 16px;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-`;
-
-const IconContainer = styled.View``;
-
-const ToolLabel = styled.Text<{$active: boolean}>`
-  color: ${props => props.theme.text};
-  font-size: 14px;
-  font-weight: ${props => (props.$active ? '600' : '400')};
-`;
-
-const Divider = styled.View`
-  height: 1px;
-  background-color: ${props => props.theme.border};
-  margin: 12px 0;
-`;
-
-const SliderContainer = styled.View`
-  padding: 0 4px;
-`;
-
-const SliderLabel = styled.View`
-  flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
 `;
 
-const SliderValue = styled.Text`
-  color: ${props => props.theme.text};
-  font-size: 14px;
-  font-weight: 600;
+const Section = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ColorSection = styled.View`
+  flex: 1;
+  /* max-width: 60%; */
+`;
+
+const ColorButton = styled.TouchableOpacity<{
+  $color: string;
+  $active?: boolean;
+}>`
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background-color: ${props => props.$color};
+  border: 3px solid ${props => (props.$active ? '#007AFF' : props.theme.border)};
+`;
+
+const ActionButton = styled.TouchableOpacity<{$disabled?: boolean}>`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: ${props => props.theme.surface};
+  border: 1px solid ${props => props.theme.border};
+  align-items: center;
+  justify-content: center;
+  opacity: ${props => (props.$disabled ? 0.4 : 1)};
 `;
 
 /**
@@ -128,142 +101,74 @@ const SliderValue = styled.Text`
  * ```
  */
 export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
-  selectedTool,
-  brushSize,
+  selectedTool: _selectedTool,
+  brushSize: _brushSize,
   brushColor,
   colors,
-  onToolChange,
-  onBrushSizeChange,
+  onToolChange: _onToolChange,
+  onBrushSizeChange: _onBrushSizeChange,
   onColorChange,
   onUndo,
-  onRedo,
+  onRedo: _onRedo,
   onClear,
   canUndo = false,
-  canRedo = false,
+  canRedo: _canRedo = false,
 }) => {
   const theme = useTheme();
 
   return (
     <Container>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Tools */}
+      <ToolRow>
+        {/* Left: Color Picker */}
+        <ColorSection>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              paddingHorizontal: 4,
+            }}
+          >
+            {colors?.map(color => (
+              <ColorButton
+                key={color}
+                $color={color}
+                $active={brushColor === color}
+                onPress={() => onColorChange(color)}
+                accessibilityRole="button"
+                accessibilityLabel={`Select color ${color}`}
+                accessibilityState={{selected: brushColor === color}}
+              />
+            ))}
+          </ScrollView>
+        </ColorSection>
+
+        {/* Right: Actions */}
         <Section>
-          <SectionTitle>Tools</SectionTitle>
-          <ToolRow>
-            <ToolButton
-              $active={selectedTool === 'pencil'}
-              onPress={() => onToolChange('pencil')}
-              accessibilityRole="button"
-              accessibilityLabel="Pencil tool"
-              accessibilityState={{selected: selectedTool === 'pencil'}}
+          {onUndo && (
+            <ActionButton
+              $disabled={!canUndo}
+              onPress={onUndo}
+              accessibilityLabel="Undo"
+              disabled={!canUndo}
             >
-              <IconContainer>
-                <Icon
-                  name="edit"
-                  size={20}
-                  color={selectedTool === 'pencil' ? theme.text : theme.text}
-                />
-              </IconContainer>
-              <ToolLabel $active={selectedTool === 'pencil'}>Pencil</ToolLabel>
-            </ToolButton>
+              <Icon
+                name="undo"
+                size={20}
+                color={canUndo ? theme.text : theme.textSecondary}
+              />
+            </ActionButton>
+          )}
 
-            <ToolButton
-              $active={selectedTool === 'eraser'}
-              onPress={() => onToolChange('eraser')}
-              accessibilityRole="button"
-              accessibilityLabel="Eraser tool"
-              accessibilityState={{selected: selectedTool === 'eraser'}}
-            >
-              <IconContainer>
-                <Icon
-                  name="delete"
-                  size={20}
-                  color={selectedTool === 'eraser' ? theme.text : theme.text}
-                />
-              </IconContainer>
-              <ToolLabel $active={selectedTool === 'eraser'}>Eraser</ToolLabel>
-            </ToolButton>
-          </ToolRow>
+          {onClear && (
+            <ActionButton onPress={onClear} accessibilityLabel="Clear canvas">
+              <Icon name="rest" size={20} color={theme.text} />
+            </ActionButton>
+          )}
         </Section>
-
-        {/* Brush Size */}
-        <Section>
-          <SliderLabel>
-            <SectionTitle>Brush Size</SectionTitle>
-            <SliderValue>{brushSize}px</SliderValue>
-          </SliderLabel>
-          <SliderContainer>
-            <Slider
-              value={brushSize}
-              min={1}
-              max={50}
-              step={1}
-              onValueChange={onBrushSizeChange}
-              accessibilityLabel="Brush size"
-            />
-          </SliderContainer>
-        </Section>
-
-        {/* Color Picker */}
-        {selectedTool === 'pencil' && (
-          <Section>
-            <SectionTitle>Color</SectionTitle>
-            <ColorPicker
-              selectedColor={brushColor}
-              onColorSelect={onColorChange}
-              colors={colors}
-            />
-          </Section>
-        )}
-
-        <Divider />
-
-        {/* Actions */}
-        <Section>
-          <SectionTitle>Actions</SectionTitle>
-          <ToolRow>
-            {onUndo && (
-              <IconButton
-                onPress={onUndo}
-                $disabled={!canUndo}
-                accessibilityLabel="Undo"
-                $size="small"
-              >
-                <Icon
-                  name="undo"
-                  size={20}
-                  color={canUndo ? theme.text : theme.textSecondary}
-                />
-              </IconButton>
-            )}
-
-            {onRedo && (
-              <IconButton
-                onPress={onRedo}
-                $disabled={!canRedo}
-                accessibilityLabel="Redo"
-                $size="small"
-              >
-                <Icon
-                  name="redo"
-                  size={20}
-                  color={canRedo ? theme.text : theme.textSecondary}
-                />
-              </IconButton>
-            )}
-
-            {onClear && (
-              <IconButton
-                onPress={onClear}
-                accessibilityLabel="Clear canvas"
-                $size="small"
-              >
-                <Icon name="delete" size={20} color={theme.text} />
-              </IconButton>
-            )}
-          </ToolRow>
-        </Section>
-      </ScrollView>
+      </ToolRow>
     </Container>
   );
 };
