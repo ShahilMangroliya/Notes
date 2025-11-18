@@ -125,7 +125,7 @@ export type SortOption = 'updatedAt' | 'createdAt' | 'title';
 /**
  * Export format options
  */
-export type ExportFormat = 'pdf' | 'text' | 'image' | 'json';
+export type ExportFormat = 'pdf' | 'text' | 'markdown' | 'image' | 'json';
 
 /**
  * Default text formatting

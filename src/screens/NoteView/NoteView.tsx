@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-import {ActivityIndicator} from 'react-native';
 import styled from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import CreateNote from '@/screens/CreateNote/CreateNote';
@@ -7,14 +6,10 @@ import DrawingNote from '@/screens/DrawingNote/DrawingNote';
 import {useAppDispatch, useAppSelector} from '@/hooks/hooks';
 import {selectNoteById} from '@/redux/selectors';
 import {setCurrentNote} from '@/redux/notesSlice';
-import type {NoteViewScreenProps, NoteEditorScreenProps} from '@/types/navigation';
-
-const LoadingContainer = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  background-color: ${props => props.theme.background};
-`;
+import type {
+  NoteViewScreenProps,
+  NoteEditorScreenProps,
+} from '@/types/navigation';
 
 const ErrorContainer = styled.View`
   flex: 1;

@@ -16,11 +16,8 @@ export const selectNotesError = (state: RootState) => state.notes.error;
 /**
  * Editor selectors
  */
-export const selectTextEditor = (state: RootState) => state.editor.textEditor;
 export const selectDrawingEditor = (state: RootState) =>
   state.editor.drawingEditor;
-export const selectCurrentFormatting = (state: RootState) =>
-  state.editor.textEditor.currentFormatting;
 export const selectSelectedTool = (state: RootState) =>
   state.editor.drawingEditor.selectedTool;
 export const selectBrushSize = (state: RootState) =>

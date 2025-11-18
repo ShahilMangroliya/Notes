@@ -11,7 +11,7 @@ A comprehensive React Native notes application with rich text editing, drawing c
 - **State Management:** Redux Toolkit (@reduxjs/toolkit)
 - **Styling:** styled-components/native
 - **Navigation:** React Navigation v7 (native-stack)
-- **Storage:** MMKV (react-native-mmkv)
+- **Storage:** MMKV (react-native-mmkv-storage)
 - **Drawing:** @shopify/react-native-skia
 - **Voice Input:** @react-native-voice/voice
 - **Text-to-Speech:** react-native-tts

@@ -1,11 +1,12 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, useWindowDimensions} from 'react-native';
+import React, {useCallback, useEffect, useState, useRef} from 'react';
+import {Alert, useWindowDimensions, View} from 'react-native';
 import {useTheme} from 'styled-components/native';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import DrawingToolbar from '@/components/DrawingToolbar';
 import DrawingCanvas from '@/components/DrawingCanvas';
 import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
+import ExportModal from '@/components/ExportModal';
 import {createDrawingNote} from '@/util/NoteHelper';
 import {useAppDispatch} from '@/hooks/hooks';
 import {setCurrentNote} from '@/redux/notesSlice';
@@ -20,8 +21,8 @@ import * as S from './styles';
  * Features auto-save functionality
  */
 const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
-  const dispatch = useAppDispatch();
   const {noteId, noteType} = route.params;
+  const dispatch = useAppDispatch();
   const theme = useTheme();
   const dimensions = useWindowDimensions();
 
@@ -45,6 +46,8 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   } = useDrawingEditor();
 
   const [title, setTitle] = useState('');
+  const [showExportModal, setShowExportModal] = useState(false);
+  const canvasRef = useRef<View>(null);
 
   // Calculate responsive canvas size that fits the screen
   // Account for: header (~60px) + title input (~70px) + toolbar (~60px) = ~190px
@@ -106,6 +109,20 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     );
   }, [clearCanvas]);
 
+  const handleExport = useCallback(async () => {
+    setShowExportModal(true);
+  }, []);
+
+  // Unused export format handler - kept for potential future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleExportFormat = useCallback(
+    async (_format: 'pdf' | 'text' | 'markdown' | 'image' | 'json') => {
+      // Function body removed as it's not currently used
+      // Export is handled by ExportModal component
+    },
+    [],
+  );
+
   if (!currentNote || noteType !== 'drawing') {
     return (
       <SafeAreaContainer>
@@ -128,6 +145,12 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           </S.HeaderLeft>
           <S.HeaderRight>
             {isSaving && <S.SavingIndicator>Saving...</S.SavingIndicator>}
+            <IconButton
+              onPress={handleExport}
+              accessibilityLabel="Export drawing"
+            >
+              <Icon name="upload" size={24} color={theme.text} />
+            </IconButton>
           </S.HeaderRight>
         </S.Header>
 
@@ -138,7 +161,7 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           maxLength={200}
         />
 
-        <S.CanvasContainer>
+        <S.CanvasContainer ref={canvasRef} collapsable={false}>
           <DrawingCanvas
             strokes={strokes}
             currentStroke={currentStroke}
@@ -165,6 +188,14 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           />
         </S.ToolbarContainer>
       </S.Container>
+
+      {currentNote && (
+        <ExportModal
+          visible={showExportModal}
+          note={currentNote}
+          onClose={() => setShowExportModal(false)}
+        />
+      )}
     </SafeAreaContainer>
   );
 };

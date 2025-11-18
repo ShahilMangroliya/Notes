@@ -76,13 +76,6 @@ export {
 } from './BlockTypeSelector';
 export type {BlockTypeSelectorProps} from './BlockTypeSelector/BlockTypeSelector';
 
-// TextBlockEditor
-export {
-  TextBlockEditor,
-  default as TextBlockEditorDefault,
-} from './TextBlockEditor';
-export type {TextBlockEditorProps} from './TextBlockEditor/TextBlockEditor';
-
 // DrawingToolbar
 export {
   DrawingToolbar,
@@ -94,24 +87,9 @@ export type {DrawingToolbarProps} from './DrawingToolbar/DrawingToolbar';
 export {DrawingCanvas, default as DrawingCanvasDefault} from './DrawingCanvas';
 export type {DrawingCanvasProps} from './DrawingCanvas/DrawingCanvas';
 
-// VoiceRecorder
-export {VoiceRecorder, default as VoiceRecorderDefault} from './VoiceRecorder';
-export type {VoiceRecorderProps} from './VoiceRecorder/VoiceRecorder';
-
 // Icon
 export {Icon, default as IconDefault} from './Icon';
 export type {IconProps} from './Icon/Icon';
-
-// RichTextEditor (old - kept for backward compatibility)
-export {
-  RichTextEditor,
-  default as RichTextEditorDefault,
-} from './RichTextEditor';
-export type {RichTextEditorProps} from './RichTextEditor/RichTextEditor';
-
-// FormattedText (old - kept for backward compatibility)
-export {FormattedText, default as FormattedTextDefault} from './FormattedText';
-export type {FormattedTextProps} from './FormattedText/FormattedText';
 
 // InlineRichTextEditor (new - WebView-based WYSIWYG editor)
 export {
@@ -126,3 +104,12 @@ export {
   default as InlineFormattingToolbarDefault,
 } from './InlineFormattingToolbar';
 export type {InlineFormattingToolbarProps} from './InlineFormattingToolbar/InlineFormattingToolbar';
+
+// ExportModal
+export {ExportModal, default as ExportModalDefault} from './ExportModal';
+export type {ExportModalProps} from './ExportModal/ExportModal';
+
+// ThemeSelector
+export {ThemeSelector, default as ThemeSelectorDefault} from './ThemeSelector';
+export type {ThemeSelectorProps} from './ThemeSelector/ThemeSelector';
+

@@ -21,6 +21,10 @@ const Container = styled.View`
   padding: 8px 12px;
 `;
 
+const ScrollViewContent = styled.View`
+  padding-horizontal: 4px;
+`;
+
 const ButtonRow = styled.View`
   flex-direction: row;
   gap: 6px;
@@ -77,35 +81,33 @@ export const BlockTypeSelector: React.FC<BlockTypeSelectorProps> = ({
 
   return (
     <Container>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{paddingHorizontal: 4}}
-      >
-        <ButtonRow>
-          {BLOCK_TYPE_OPTIONS.map(option => {
-            const isActive = currentType === option.type;
-            return (
-              <TypeButton
-                key={option.type}
-                $active={isActive}
-                onPress={() => onTypeChange(option.type)}
-                accessibilityRole="button"
-                accessibilityLabel={`Set block type to ${option.label}`}
-                accessibilityState={{selected: isActive}}
-              >
-                <IconContainer>
-                  <Icon
-                    name={option.icon}
-                    size={16}
-                    color={isActive ? theme.surface : theme.text}
-                  />
-                </IconContainer>
-                <TypeLabel $active={isActive}>{option.label}</TypeLabel>
-              </TypeButton>
-            );
-          })}
-        </ButtonRow>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollViewContent>
+          <ButtonRow>
+            {BLOCK_TYPE_OPTIONS.map(option => {
+              const isActive = currentType === option.type;
+              return (
+                <TypeButton
+                  key={option.type}
+                  $active={isActive}
+                  onPress={() => onTypeChange(option.type)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Set block type to ${option.label}`}
+                  accessibilityState={{selected: isActive}}
+                >
+                  <IconContainer>
+                    <Icon
+                      name={option.icon}
+                      size={16}
+                      color={isActive ? theme.surface : theme.text}
+                    />
+                  </IconContainer>
+                  <TypeLabel $active={isActive}>{option.label}</TypeLabel>
+                </TypeButton>
+              );
+            })}
+          </ButtonRow>
+        </ScrollViewContent>
       </ScrollView>
     </Container>
   );

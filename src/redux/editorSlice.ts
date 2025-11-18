@@ -1,18 +1,6 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import type {TextFormatting, DrawingStroke} from '@/types/note';
-import {DEFAULT_TEXT_FORMATTING} from '@/types/note';
+import type {DrawingStroke} from '@/types/note';
 import logger from '@/util/DebugLogger';
-
-/**
- * Text editor state interface
- */
-export interface TextEditorState {
-  selectedBlockId: string | null;
-  currentFormatting: TextFormatting;
-  history: unknown[]; // Will be properly typed later with undo/redo system
-  historyIndex: number;
-  maxHistory: number;
-}
 
 /**
  * Drawing editor state interface
@@ -31,20 +19,12 @@ export interface DrawingEditorState {
  * Editor state interface
  */
 export interface EditorState {
-  textEditor: TextEditorState;
   drawingEditor: DrawingEditorState;
   isDirty: boolean;
   lastSaved: number | null;
 }
 
 const initialState: EditorState = {
-  textEditor: {
-    selectedBlockId: null,
-    currentFormatting: DEFAULT_TEXT_FORMATTING,
-    history: [],
-    historyIndex: -1,
-    maxHistory: 50,
-  },
   drawingEditor: {
     selectedTool: 'pencil',
     brushSize: 4,
@@ -62,37 +42,6 @@ const editorSlice = createSlice({
   name: 'editor',
   initialState,
   reducers: {
-    // Text editor actions
-    setSelectedBlockId: (state, action: PayloadAction<string | null>) => {
-      logger.action('editor/setSelectedBlockId', action.payload);
-      state.textEditor.selectedBlockId = action.payload;
-    },
-
-    setTextFormatting: (state, action: PayloadAction<Partial<TextFormatting>>) => {
-      logger.action('editor/setTextFormatting', action.payload);
-      state.textEditor.currentFormatting = {
-        ...state.textEditor.currentFormatting,
-        ...action.payload,
-      };
-      state.isDirty = true;
-    },
-
-    toggleTextFormatting: (
-      state,
-      action: PayloadAction<'bold' | 'italic' | 'underline' | 'strikethrough'>,
-    ) => {
-      const key = action.payload;
-      logger.action('editor/toggleTextFormatting', action.payload);
-      state.textEditor.currentFormatting[key] =
-        !state.textEditor.currentFormatting[key];
-      state.isDirty = true;
-    },
-
-    resetTextFormatting: state => {
-      logger.action('editor/resetTextFormatting');
-      state.textEditor.currentFormatting = DEFAULT_TEXT_FORMATTING;
-    },
-
     // Drawing editor actions
     setDrawingTool: (state, action: PayloadAction<'pencil' | 'eraser'>) => {
       state.drawingEditor.selectedTool = action.payload;
@@ -134,10 +83,6 @@ const editorSlice = createSlice({
 });
 
 export const {
-  setSelectedBlockId,
-  setTextFormatting,
-  toggleTextFormatting,
-  resetTextFormatting,
   setDrawingTool,
   setBrushSize,
   setBrushColor,

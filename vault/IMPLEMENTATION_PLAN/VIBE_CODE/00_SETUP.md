@@ -10,7 +10,7 @@ You are working on a React Native Notes application. This file contains the setu
 - **Language**: TypeScript (strict mode, no `any` types)
 - **State Management**: Redux Toolkit
 - **Styling**: styled-components/native
-- **Storage**: react-native-mmkv
+- **Storage**: react-native-mmkv-storage
 - **Path Alias**: `@/` maps to `src/`
 
 ## Critical Rules

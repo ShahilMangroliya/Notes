@@ -1,4 +1,4 @@
-import {useCallback} from 'react';
+import {useCallback, useEffect} from 'react';
 import {useAppDispatch, useAppSelector} from './hooks';
 import {
   startListening,
@@ -13,7 +13,7 @@ import {
 import {selectSTTState, selectTTSState} from '@/redux/selectors';
 import Voice from '@react-native-voice/voice';
 import Tts from 'react-native-tts';
-import {requestMicrophonePermission} from '@/util/PermissionHelper';
+import {checkAudioPermission} from '@/util/PermissionHelper';
 
 /**
  * Custom hook for managing voice features (STT and TTS)
@@ -24,12 +24,70 @@ export const useVoice = () => {
   const sttState = useAppSelector(selectSTTState);
   const ttsState = useAppSelector(selectTTSState);
 
+  // Setup and cleanup Voice listeners
+  useEffect(() => {
+    // Setup voice event handlers
+    Voice.onSpeechStart = () => {
+      // Speech started
+    };
+
+    Voice.onSpeechRecognized = () => {
+      // Speech recognized
+    };
+
+    Voice.onSpeechEnd = () => {
+      // Speech ended - stop listening and reset icon
+      dispatch(stopListening());
+    };
+
+    Voice.onSpeechError = (event: any) => {
+      dispatch(
+        setSTTError(event?.error?.message || 'Speech recognition error'),
+      );
+      dispatch(stopListening());
+    };
+
+    Voice.onSpeechResults = (event: any) => {
+      if (event?.value && event.value.length > 0) {
+        dispatch(setRecognizedText(event.value[0]));
+      }
+    };
+
+    Voice.onSpeechPartialResults = (event: any) => {
+      // Update with partial results as user speaks
+      if (event?.value && event.value.length > 0) {
+        dispatch(setRecognizedText(event.value[0]));
+      }
+    };
+
+    Voice.onSpeechVolumeChanged = () => {
+      // Volume changed (optional)
+    };
+
+    // Cleanup on unmount
+    return () => {
+      Voice.destroy()
+        .then(() => Voice.removeAllListeners())
+        .catch(() => {
+          // Ignore cleanup errors
+        });
+    };
+  }, [dispatch]);
+
   // Speech-to-Text Actions
   const handleStartListening = useCallback(async () => {
     try {
-      // Request microphone permission
-      const granted = await requestMicrophonePermission();
-      if (!granted) {
+      // Check if Voice is available
+      const isAvailable = await Voice.isAvailable();
+      if (!isAvailable) {
+        dispatch(setSTTError('Voice recognition is not available'));
+        return;
+      }
+
+      // Check audio permissions (comprehensive check)
+      try {
+        await checkAudioPermission();
+      } catch {
         dispatch(setSTTError('Microphone permission denied'));
         return;
       }
@@ -37,20 +95,12 @@ export const useVoice = () => {
       // Start voice recognition
       await Voice.start('en-US');
       dispatch(startListening());
-
-      // Setup voice event handlers
-      Voice.onSpeechResults = (event: any) => {
-        if (event.value && event.value.length > 0) {
-          dispatch(setRecognizedText(event.value[0]));
-        }
-      };
-
-      Voice.onSpeechError = (event: any) => {
-        dispatch(setSTTError(event.error?.message || 'Speech recognition error'));
-        dispatch(stopListening());
-      };
     } catch (error) {
-      dispatch(setSTTError((error as Error).message));
+      dispatch(
+        setSTTError(
+          (error as Error).message || 'Failed to start voice recognition',
+        ),
+      );
       dispatch(stopListening());
     }
   }, [dispatch]);
@@ -58,9 +108,12 @@ export const useVoice = () => {
   const handleStopListening = useCallback(async () => {
     try {
       await Voice.stop();
+      dispatch(clearRecognizedText());
       dispatch(stopListening());
-    } catch (error) {
-      dispatch(setSTTError((error as Error).message));
+    } catch {
+      // Ignore stop errors - Voice might already be stopped
+      dispatch(clearRecognizedText());
+      dispatch(stopListening());
     }
   }, [dispatch]);
 
@@ -74,11 +127,7 @@ export const useVoice = () => {
       try {
         dispatch(startSpeaking());
 
-        // Configure TTS
-        await Tts.setDefaultRate(ttsState.rate);
-        await Tts.setDefaultPitch(ttsState.pitch);
-
-        // Speak text
+        // Speak text using default TTS settings
         await Tts.speak(text);
 
         // Setup TTS event handlers
@@ -94,7 +143,7 @@ export const useVoice = () => {
         dispatch(stopSpeaking());
       }
     },
-    [ttsState.rate, ttsState.pitch, dispatch],
+    [dispatch],
   );
 
   const handleStopSpeaking = useCallback(async () => {

@@ -1,19 +1,29 @@
-import {createMMKV} from 'react-native-mmkv';
+import {MMKVLoader} from 'react-native-mmkv-storage';
 
-export const storage = createMMKV();
+const storageLoader = new MMKVLoader()
+  .withInstanceID('notes-storage')
+  .initialize();
+
+export const storage = storageLoader;
 
 export const getItem = (
   key: string,
   type: 'boolean' | 'string' | 'number' | 'arrayBuffer',
 ): boolean | string | number | ArrayBuffer | undefined => {
   if (type === 'boolean') {
-    return storage.getBoolean(key);
+    const value = storage.getBool(key);
+    return value ?? undefined;
   } else if (type === 'string') {
-    return storage.getString(key);
+    return storage.getString(key) ?? undefined;
   } else if (type === 'number') {
-    return storage.getNumber(key);
+    return storage.getInt(key) ?? undefined;
   } else if (type === 'arrayBuffer') {
-    return storage.getBuffer(key);
+    // ArrayBuffer not directly supported, using array as fallback
+    const array = storage.getArray<number>(key);
+    if (array) {
+      return new Uint8Array(array).buffer;
+    }
+    return undefined;
   } else {
     throw new Error('Invalid type');
   }
@@ -23,15 +33,27 @@ export const setItem = (
   key: string,
   value: boolean | string | number | ArrayBuffer,
 ) => {
-  return storage.set(key, value);
+  if (typeof value === 'boolean') {
+    return storage.setBool(key, value);
+  } else if (typeof value === 'string') {
+    return storage.setString(key, value);
+  } else if (typeof value === 'number') {
+    return storage.setInt(key, value);
+  } else if (value instanceof ArrayBuffer) {
+    // ArrayBuffer not directly supported, convert to array
+    const array = Array.from(new Uint8Array(value));
+    return storage.setArray(key, array);
+  } else {
+    throw new Error('Invalid value type');
+  }
 };
 
 export const removeItem = (key: string): boolean => {
-  return storage.remove(key);
+  return storage.removeItem(key);
 };
 
 export const clear = () => {
-  return storage.clearAll();
+  return storage.clearStore();
 };
 
 export default {getItem, setItem, removeItem, clear};

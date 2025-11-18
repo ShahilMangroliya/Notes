@@ -103,7 +103,7 @@ npm install --save-dev @types/uuid --legacy-peer-deps
   - react-native-blob-util ✅
   - react-native-gesture-handler ✅
   - react-native-html-to-pdf ✅
-  - react-native-mmkv ✅
+  - react-native-mmkv-storage ✅
   - react-native-reanimated ✅
   - react-native-safe-area-context ✅
   - react-native-screens ✅

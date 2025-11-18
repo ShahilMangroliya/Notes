@@ -16,7 +16,7 @@ export interface STTState {
 export interface TTSState {
   isPlaying: boolean;
   progress: number; // 0-100
-  rate: number; // Speech rate (0.5 - 2.0)
+  rate: number; // Speech rate (0.0 - 1.0, 0.5 is normal speed)
   pitch: number; // Speech pitch (0.5 - 2.0)
   voice: string | null; // Voice identifier
   error: string | null;
@@ -40,7 +40,7 @@ const initialState: VoiceState = {
   tts: {
     isPlaying: false,
     progress: 0,
-    rate: 1.0,
+    rate: 0.5, // Default to normal speed (0.0-1.0 range for react-native-tts)
     pitch: 1.0,
     voice: null,
     error: null,
@@ -104,10 +104,12 @@ const voiceSlice = createSlice({
     },
 
     setTTSRate: (state, action: PayloadAction<number>) => {
-      state.tts.rate = Math.max(0.5, Math.min(2.0, action.payload));
+      // react-native-tts rate range is 0.0 to 1.0 (0.5 is normal speed)
+      state.tts.rate = Math.max(0.0, Math.min(1.0, action.payload));
     },
 
     setTTSPitch: (state, action: PayloadAction<number>) => {
+      // react-native-tts pitch range is 0.5 to 2.0
       state.tts.pitch = Math.max(0.5, Math.min(2.0, action.payload));
     },
 

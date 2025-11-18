@@ -193,7 +193,7 @@ Navigation automatically uses theme colors:
 
 ### MMKV
 
-Using `react-native-mmkv` for fast, synchronous storage.
+Using `react-native-mmkv-storage` for fast, synchronous storage.
 
 **Location**: `src/util/StorageHelper.ts`
 

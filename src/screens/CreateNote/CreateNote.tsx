@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {Platform, Keyboard} from 'react-native';
+import {Platform, Keyboard, Alert} from 'react-native';
 import {useTheme} from 'styled-components/native';
 import {RichEditor} from 'react-native-pell-rich-editor';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
@@ -7,6 +7,8 @@ import InlineRichTextEditor from '@/components/InlineRichTextEditor';
 import InlineFormattingToolbar from '@/components/InlineFormattingToolbar';
 import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
+import ExportModal from '@/components/ExportModal';
+import {useVoice} from '@/hooks/useVoice';
 import {createTextNote} from '@/util/NoteHelper';
 import {useAppDispatch, useAppSelector} from '@/hooks/hooks';
 import {setCurrentNote} from '@/redux/notesSlice';
@@ -39,6 +41,19 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   const [htmlContent, setHtmlContent] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isTitleFocused, setIsTitleFocused] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  // Voice/TTS hook
+  const {
+    isListening,
+    recognizedText,
+    isPlaying,
+    speak,
+    stopSpeaking,
+    startListening,
+    stopListening,
+    ttsError,
+  } = useVoice();
 
   // Create updated note object for auto-save (memoized to prevent re-renders)
   const noteToSave = React.useMemo(() => {
@@ -55,11 +70,9 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   }, [currentNote, title, htmlContent]);
 
   // Auto-save hook - saves after 1.5 seconds of inactivity
-  const {isSaving, saveNow} = useAutoSave(
-    noteToSave,
-    [title, htmlContent],
-    {delay: 1500},
-  );
+  const {isSaving, saveNow} = useAutoSave(noteToSave, [title, htmlContent], {
+    delay: 1500,
+  });
 
   // Initialize note - only run once per mount
   useEffect(() => {
@@ -169,6 +182,118 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     setHtmlContent(html);
   }, []);
 
+  const handleExport = useCallback(async () => {
+    // Save current content before exporting
+    if (editorRef.current) {
+      try {
+        const currentHtml = await editorRef.current.getContentHtml();
+        setHtmlContent(currentHtml);
+        // Wait a bit for state to update
+        setTimeout(() => {
+          setShowExportModal(true);
+        }, 100);
+      } catch (error) {
+        logger.error('Failed to get editor content', error as Error);
+        setShowExportModal(true);
+      }
+    } else {
+      setShowExportModal(true);
+    }
+  }, []);
+
+  // Create note for export with current content
+  const noteForExport = React.useMemo(() => {
+    if (!currentNote) return null;
+    return {
+      ...currentNote,
+      title,
+      content: {
+        ...(currentNote.content as any),
+        html: htmlContent,
+        text: htmlContent,
+      },
+    };
+  }, [currentNote, title, htmlContent]);
+
+  // Auto-insert recognized text into editor
+  const lastInsertedTextRef = useRef('');
+  useEffect(() => {
+    if (
+      recognizedText &&
+      recognizedText.trim() &&
+      recognizedText !== lastInsertedTextRef.current &&
+      editorRef.current &&
+      isListening
+    ) {
+      // Calculate only the new text to insert (difference from last insertion)
+      const lastText = lastInsertedTextRef.current;
+      let textToInsert = recognizedText;
+
+      // If recognized text starts with last inserted text, only insert the new part
+      if (lastText && recognizedText.startsWith(lastText)) {
+        textToInsert = recognizedText.slice(lastText.length);
+      }
+
+      if (textToInsert.trim()) {
+        // Insert only the new text
+        editorRef.current.insertText(textToInsert + ' ');
+        lastInsertedTextRef.current = recognizedText;
+        // Update HTML content
+        editorRef.current.getContentHtml().then(html => {
+          setHtmlContent(html);
+        });
+      }
+    }
+  }, [recognizedText, isListening]);
+
+  // Clear last inserted text when stopping
+  useEffect(() => {
+    if (!isListening) {
+      lastInsertedTextRef.current = '';
+    }
+  }, [isListening]);
+
+  const handleToggleVoiceInput = useCallback(() => {
+    if (isListening) {
+      stopListening();
+      // Clear recognized text when stopping
+      lastInsertedTextRef.current = '';
+    } else {
+      // Clear previous text when starting
+      lastInsertedTextRef.current = '';
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
+  // Get text content for read aloud (strip HTML tags)
+  const textForReadAloud = React.useMemo(() => {
+    if (!htmlContent) return '';
+    // Simple HTML tag removal for TTS
+    return htmlContent
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }, [htmlContent]);
+
+  const handleToggleReadAloud = useCallback(() => {
+    if (isPlaying) {
+      stopSpeaking();
+    } else {
+      if (textForReadAloud.trim()) {
+        speak(textForReadAloud);
+      } else {
+        Alert.alert('No Text', 'There is no text to read aloud');
+      }
+    }
+  }, [isPlaying, speak, stopSpeaking, textForReadAloud]);
+
+  // Show TTS error if any
+  React.useEffect(() => {
+    if (ttsError) {
+      Alert.alert('Text-to-Speech Error', ttsError);
+    }
+  }, [ttsError]);
+
   if (!currentNote || noteType !== 'text') {
     return (
       <SafeAreaContainer>
@@ -191,6 +316,31 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           </S.HeaderLeft>
           <S.HeaderRight>
             {isSaving && <S.SavingIndicator>Saving...</S.SavingIndicator>}
+            <IconButton
+              onPress={handleToggleReadAloud}
+              accessibilityLabel={isPlaying ? 'Pause reading' : 'Read aloud'}
+            >
+              <Icon
+                name={isPlaying ? 'pause-circle' : 'play-circle'}
+                size={24}
+                color={theme.text}
+              />
+            </IconButton>
+            <IconButton
+              onPress={handleToggleVoiceInput}
+              accessibilityLabel={
+                isListening ? 'Stop voice input' : 'Start voice input'
+              }
+            >
+              <Icon
+                name={isListening ? 'close-circle' : 'audio'}
+                size={24}
+                color={isListening ? '#FF3B30' : theme.text}
+              />
+            </IconButton>
+            <IconButton onPress={handleExport} accessibilityLabel="Export note">
+              <Icon name="upload" size={24} color={theme.text} />
+            </IconButton>
           </S.HeaderRight>
         </S.Header>
 
@@ -219,6 +369,14 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           />
         )}
       </S.Container>
+
+      {noteForExport && (
+        <ExportModal
+          visible={showExportModal}
+          note={noteForExport}
+          onClose={() => setShowExportModal(false)}
+        />
+      )}
     </SafeAreaContainer>
   );
 };

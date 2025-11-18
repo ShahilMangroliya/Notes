@@ -1,6 +1,6 @@
 import {v4 as uuidv4} from 'uuid';
-import type {Note, TextContent, DrawingContent, TextBlock} from '@/types/note';
-import {DEFAULT_TEXT_FORMATTING, DEFAULT_CANVAS_SIZE} from '@/types/note';
+import type {Note, TextContent, DrawingContent} from '@/types/note';
+import {DEFAULT_CANVAS_SIZE} from '@/types/note';
 
 /**
  * Validation result interface

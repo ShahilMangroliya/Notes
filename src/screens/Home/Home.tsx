@@ -2,12 +2,12 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import FAB from '@/components/FAB';
 import FilterBar from '@/components/FilterBar';
 import Icon from '@/components/Icon';
-import IconButton from '@/components/IconButton';
 import Modal from '@/components/Modal';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import SearchBar from '@/components/SearchBar';
 import SwipeableNoteCard from '@/components/SwipeableNoteCard';
 import StyledText from '@/components/Text';
+import ThemeSelector from '@/components/ThemeSelector';
 import useNotes from '@/hooks/useNotes';
 import useThemeStore from '@/hooks/useThemeStore';
 import type {HomeScreenProps} from '@/types/navigation';
@@ -71,37 +71,6 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
     setShowDeleteDialog(false);
     setNoteToDelete(null);
   }, []);
-
-  const handleThemeToggle = useCallback(() => {
-    // Cycle through: light -> dark -> system -> light
-    if (currentTheme === 'light') {
-      setTheme('dark');
-    } else if (currentTheme === 'dark') {
-      setTheme('system');
-    } else {
-      setTheme('light');
-    }
-  }, [currentTheme, setTheme]);
-
-  const getThemeIcon = useCallback(() => {
-    if (currentTheme === 'light') {
-      return 'sun';
-    }
-    if (currentTheme === 'dark') {
-      return 'moon';
-    }
-    return 'bulb';
-  }, [currentTheme]);
-
-  const getThemeLabel = useCallback(() => {
-    if (currentTheme === 'light') {
-      return 'Switch to dark mode';
-    }
-    if (currentTheme === 'dark') {
-      return 'Switch to system theme';
-    }
-    return 'Switch to light mode';
-  }, [currentTheme]);
 
   const handleNoteLongPress = useCallback(
     (noteId: string) => {
@@ -189,13 +158,10 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
         <S.Header>
           <S.HeaderRow>
             <S.Title>Notes</S.Title>
-            <IconButton
-              onPress={handleThemeToggle}
-              accessibilityLabel={getThemeLabel()}
-              $circular
-            >
-              <Icon name={getThemeIcon()} size={24} color={theme.text} />
-            </IconButton>
+            <ThemeSelector
+              currentTheme={currentTheme}
+              onThemeChange={setTheme}
+            />
           </S.HeaderRow>
           <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
           <FilterBar
@@ -232,6 +198,7 @@ const Home: React.FC<HomeScreenProps> = ({navigation}) => {
         </FAB>
 
         <Modal
+          animationType="slide"
           visible={showCreateMenu}
           onClose={() => setShowCreateMenu(false)}
           title="Create New Note"

@@ -12,7 +12,7 @@ This is a React Native Notes application built with TypeScript, Redux Toolkit fo
 - Redux Toolkit (@reduxjs/toolkit)
 - styled-components/native
 - React Navigation v7 (native-stack)
-- MMKV (react-native-mmkv) for storage
+- MMKV (react-native-mmkv-storage) for storage
 - react-native-reanimated, react-native-worklets
 - Node.js >= 20
 

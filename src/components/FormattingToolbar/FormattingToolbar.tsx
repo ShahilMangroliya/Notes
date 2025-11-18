@@ -33,6 +33,10 @@ const Container = styled.View`
   border-top-color: ${props => props.theme.border};
 `;
 
+const ScrollViewContent = styled.View`
+  padding-horizontal: 4px;
+`;
+
 const ButtonRow = styled.View`
   flex-direction: row;
   gap: 6px;
@@ -88,85 +92,94 @@ export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{paddingHorizontal: 4}}
       >
-        <ButtonRow>
-          <FormatButton
-            $active={!!formatting.bold}
-            onPress={onToggleBold}
-            accessibilityLabel="Bold"
-          >
-            <Icon
-              name="bold"
-              size={16}
-              color={formatting.bold ? theme.surface : theme.text}
-            />
-          </FormatButton>
+        <ScrollViewContent>
+          <ButtonRow>
+            <FormatButton
+              $active={!!formatting.bold}
+              onPress={onToggleBold}
+              accessibilityLabel="Bold"
+            >
+              <Icon
+                name="bold"
+                size={16}
+                color={formatting.bold ? theme.surface : theme.text}
+              />
+            </FormatButton>
 
-          <FormatButton
-            $active={!!formatting.italic}
-            onPress={onToggleItalic}
-            accessibilityLabel="Italic"
-          >
-            <Icon
-              name="italic"
-              size={16}
-              color={formatting.italic ? theme.surface : theme.text}
-            />
-          </FormatButton>
+            <FormatButton
+              $active={!!formatting.italic}
+              onPress={onToggleItalic}
+              accessibilityLabel="Italic"
+            >
+              <Icon
+                name="italic"
+                size={16}
+                color={formatting.italic ? theme.surface : theme.text}
+              />
+            </FormatButton>
 
-          <FormatButton
-            $active={!!formatting.underline}
-            onPress={onToggleUnderline}
-            accessibilityLabel="Underline"
-          >
-            <Icon
-              name="underline"
-              size={16}
-              color={formatting.underline ? theme.surface : theme.text}
-            />
-          </FormatButton>
+            <FormatButton
+              $active={!!formatting.underline}
+              onPress={onToggleUnderline}
+              accessibilityLabel="Underline"
+            >
+              <Icon
+                name="underline"
+                size={16}
+                color={formatting.underline ? theme.surface : theme.text}
+              />
+            </FormatButton>
 
-          <FormatButton
-            $active={!!formatting.strikethrough}
-            onPress={onToggleStrikethrough}
-            accessibilityLabel="Strikethrough"
-          >
-            <Icon
-              name="strikethrough"
-              size={16}
-              color={formatting.strikethrough ? theme.surface : theme.text}
-            />
-          </FormatButton>
+            <FormatButton
+              $active={!!formatting.strikethrough}
+              onPress={onToggleStrikethrough}
+              accessibilityLabel="Strikethrough"
+            >
+              <Icon
+                name="strikethrough"
+                size={16}
+                color={formatting.strikethrough ? theme.surface : theme.text}
+              />
+            </FormatButton>
 
-          <Divider />
+            <Divider />
 
-          <FormatButton
-            onPress={onDecreaseFontSize}
-            $disabled={(formatting.fontSize || 16) <= 12}
-            accessibilityLabel="Decrease font size"
-          >
-            <Icon
-              name="minus"
-              size={14}
-              color={(formatting.fontSize || 16) <= 12 ? theme.textSecondary : theme.text}
-            />
-          </FormatButton>
+            <FormatButton
+              onPress={onDecreaseFontSize}
+              $disabled={(formatting.fontSize || 16) <= 12}
+              accessibilityLabel="Decrease font size"
+            >
+              <Icon
+                name="minus"
+                size={14}
+                color={
+                  (formatting.fontSize || 16) <= 12
+                    ? theme.textSecondary
+                    : theme.text
+                }
+              />
+            </FormatButton>
 
-          <FontSizeDisplay>{formatting.fontSize || 16}</FontSizeDisplay>
+            <FontSizeDisplay>{formatting.fontSize || 16}</FontSizeDisplay>
 
-          <FormatButton
-            onPress={onIncreaseFontSize}
-            $disabled={(formatting.fontSize || 16) >= 32}
-            accessibilityLabel="Increase font size"
-          >
-            <Icon
-              name="plus"
-              size={14}
-              color={(formatting.fontSize || 16) >= 32 ? theme.textSecondary : theme.text}
-            />
-          </FormatButton>
-        </ButtonRow>
+            <FormatButton
+              onPress={onIncreaseFontSize}
+              $disabled={(formatting.fontSize || 16) >= 32}
+              accessibilityLabel="Increase font size"
+            >
+              <Icon
+                name="plus"
+                size={14}
+                color={
+                  (formatting.fontSize || 16) >= 32
+                    ? theme.textSecondary
+                    : theme.text
+                }
+              />
+            </FormatButton>
+          </ButtonRow>
+        </ScrollViewContent>
       </ScrollView>
     </Container>
   );

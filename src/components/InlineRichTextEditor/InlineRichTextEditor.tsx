@@ -1,9 +1,14 @@
-import React, {useRef, useCallback, useEffect, forwardRef, useImperativeHandle} from 'react';
-import {ScrollView} from 'react-native';
+import React, {
+  useRef,
+  useCallback,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import styled from 'styled-components/native';
 import {useTheme} from 'styled-components/native';
-import {RichEditor, RichToolbar, actions} from 'react-native-pell-rich-editor';
-import type {FormattingRange, TextFormatting} from '@/types/note';
+import {RichEditor} from 'react-native-pell-rich-editor';
+import type {TextFormatting} from '@/types/note';
 import logger from '@/util/DebugLogger';
 
 /**
@@ -21,6 +26,11 @@ export interface InlineRichTextEditorProps {
 }
 
 const EditorContainer = styled.View`
+  flex: 1;
+  background-color: ${props => props.theme.background};
+`;
+
+const EditorWrapper = styled.View`
   flex: 1;
   background-color: ${props => props.theme.background};
 `;
@@ -46,97 +56,101 @@ const EditorContainer = styled.View`
  * />
  * ```
  */
-export const InlineRichTextEditor = forwardRef<RichEditor, InlineRichTextEditorProps>(({
-  initialContent = '',
-  onContentChange,
-  placeholder = 'Start typing...',
-  onFormattingChange,
-}, ref) => {
-  const theme = useTheme();
-  const editorRef = useRef<RichEditor>(null);
+export const InlineRichTextEditor = forwardRef<
+  RichEditor,
+  InlineRichTextEditorProps
+>(
+  (
+    {
+      initialContent = '',
+      onContentChange,
+      placeholder = 'Start typing...',
+      onFormattingChange: _onFormattingChange,
+    },
+    ref,
+  ) => {
+    const theme = useTheme();
+    const editorRef = useRef<RichEditor>(null);
 
-  // Forward the ref - RichToolbar needs direct access to RichEditor
-  useImperativeHandle(ref, () => editorRef.current as RichEditor, []);
+    // Forward the ref - RichToolbar needs direct access to RichEditor
+    useImperativeHandle(ref, () => editorRef.current as RichEditor, []);
 
-  /**
-   * Handles content changes in the editor
-   */
-  const handleChange = useCallback(
-    (html: string) => {
-      logger.callback('InlineRichTextEditor', 'handleChange', {
-        length: html.length,
+    /**
+     * Handles content changes in the editor
+     */
+    const handleChange = useCallback(
+      (html: string) => {
+        logger.callback('InlineRichTextEditor', 'handleChange', {
+          length: html.length,
+        });
+
+        if (onContentChange) {
+          onContentChange(html);
+        }
+      },
+      [onContentChange],
+    );
+
+    /**
+     * Handles editor initialization
+     */
+    const handleEditorInitialized = useCallback(() => {
+      logger.component('InlineRichTextEditor', 'initialized', {
+        hasContent: !!initialContent,
+        hasEditorRef: !!editorRef.current,
       });
 
-      if (onContentChange) {
-        onContentChange(html);
+      // Set initial content if provided (only if not empty)
+      if (initialContent && initialContent.trim() && editorRef.current) {
+        logger.component(
+          'InlineRichTextEditor',
+          'setting-initial-content',
+          initialContent,
+        );
+        editorRef.current.setContentHTML(initialContent);
       }
-    },
-    [onContentChange],
-  );
+    }, [initialContent]);
 
-  /**
-   * Handles editor initialization
-   */
-  const handleEditorInitialized = useCallback(() => {
-    logger.component('InlineRichTextEditor', 'initialized', {
-      hasContent: !!initialContent,
-      hasEditorRef: !!editorRef.current,
-    });
+    /**
+     * Handles focus event
+     */
+    const handleFocus = useCallback(() => {
+      logger.callback('InlineRichTextEditor', 'focus');
+    }, []);
 
-    // Set initial content if provided (only if not empty)
-    if (initialContent && initialContent.trim() && editorRef.current) {
-      logger.component(
-        'InlineRichTextEditor',
-        'setting-initial-content',
-        initialContent,
-      );
-      editorRef.current.setContentHTML(initialContent);
-    }
-  }, [initialContent]);
+    /**
+     * Handles blur event
+     */
+    const handleBlur = useCallback(() => {
+      logger.callback('InlineRichTextEditor', 'blur');
+    }, []);
 
-  /**
-   * Handles focus event
-   */
-  const handleFocus = useCallback(() => {
-    logger.callback('InlineRichTextEditor', 'focus');
-  }, []);
+    /**
+     * Sets up editor theme colors
+     */
+    useEffect(() => {
+      // Theme is applied via editorStyle prop, no need to update content here
+    }, [theme]);
 
-  /**
-   * Handles blur event
-   */
-  const handleBlur = useCallback(() => {
-    logger.callback('InlineRichTextEditor', 'blur');
-  }, []);
-
-  /**
-   * Sets up editor theme colors
-   */
-  useEffect(() => {
-    // Theme is applied via editorStyle prop, no need to update content here
-  }, [theme]);
-
-  return (
-    <EditorContainer>
-      <RichEditor
-        ref={editorRef}
-        placeholder={placeholder}
-        onChange={handleChange}
-        editorInitializedCallback={handleEditorInitialized}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        initialContentHTML={initialContent || ''}
-        useContainer={false}
-        disabled={false}
-        style={{
-          flex: 1,
-          backgroundColor: theme.background,
-        }}
-        editorStyle={{
-          backgroundColor: theme.background,
-          color: theme.text,
-          caretColor: theme.text,
-          placeholderColor: theme.textSecondary,
-          contentCSSText: `
+    return (
+      <EditorContainer>
+        <EditorWrapper>
+          <RichEditor
+            ref={editorRef}
+            placeholder={placeholder}
+            onChange={handleChange}
+            editorInitializedCallback={handleEditorInitialized}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            initialContentHTML={initialContent || ''}
+            useContainer={false}
+            disabled={false}
+            editorStyle={{
+              backgroundColor: theme.background,
+              color: theme.text,
+              caretColor: theme.text,
+              placeholderColor: theme.textSecondary,
+              contentCSSText: `
             * {
               direction: ltr !important;
               text-align: left !important;
@@ -156,11 +170,13 @@ export const InlineRichTextEditor = forwardRef<RichEditor, InlineRichTextEditorP
               text-align: left !important;
             }
           `,
-        }}
-      />
-    </EditorContainer>
-  );
-});
+            }}
+          />
+        </EditorWrapper>
+      </EditorContainer>
+    );
+  },
+);
 
 InlineRichTextEditor.displayName = 'InlineRichTextEditor';
 
