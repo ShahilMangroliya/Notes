@@ -105,10 +105,6 @@ export {
 } from './InlineFormattingToolbar';
 export type {InlineFormattingToolbarProps} from './InlineFormattingToolbar/InlineFormattingToolbar';
 
-// ExportModal
-export {ExportModal, default as ExportModalDefault} from './ExportModal';
-export type {ExportModalProps} from './ExportModal/ExportModal';
-
 // ThemeSelector
 export {ThemeSelector, default as ThemeSelectorDefault} from './ThemeSelector';
 export type {ThemeSelectorProps} from './ThemeSelector/ThemeSelector';

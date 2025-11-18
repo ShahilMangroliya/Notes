@@ -3,7 +3,6 @@ import themeReducer from './themeSlice';
 import notesReducer from './notesSlice';
 import editorReducer from './editorSlice';
 import voiceReducer from './voiceSlice';
-import exportReducer from './exportSlice';
 import logger from '@/util/DebugLogger';
 
 /**
@@ -26,7 +25,6 @@ export const store = configureStore({
     notes: notesReducer,
     editor: editorReducer,
     voice: voiceReducer,
-    export: exportReducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

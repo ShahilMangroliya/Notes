@@ -7,7 +7,6 @@ import InlineRichTextEditor from '@/components/InlineRichTextEditor';
 import InlineFormattingToolbar from '@/components/InlineFormattingToolbar';
 import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
-import ExportModal from '@/components/ExportModal';
 import {useVoice} from '@/hooks/useVoice';
 import {createTextNote} from '@/util/NoteHelper';
 import {useAppDispatch, useAppSelector} from '@/hooks/hooks';
@@ -41,7 +40,6 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   const [htmlContent, setHtmlContent] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isTitleFocused, setIsTitleFocused] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
 
   // Voice/TTS hook
   const {
@@ -182,38 +180,6 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     setHtmlContent(html);
   }, []);
 
-  const handleExport = useCallback(async () => {
-    // Save current content before exporting
-    if (editorRef.current) {
-      try {
-        const currentHtml = await editorRef.current.getContentHtml();
-        setHtmlContent(currentHtml);
-        // Wait a bit for state to update
-        setTimeout(() => {
-          setShowExportModal(true);
-        }, 100);
-      } catch (error) {
-        logger.error('Failed to get editor content', error as Error);
-        setShowExportModal(true);
-      }
-    } else {
-      setShowExportModal(true);
-    }
-  }, []);
-
-  // Create note for export with current content
-  const noteForExport = React.useMemo(() => {
-    if (!currentNote) return null;
-    return {
-      ...currentNote,
-      title,
-      content: {
-        ...(currentNote.content as any),
-        html: htmlContent,
-        text: htmlContent,
-      },
-    };
-  }, [currentNote, title, htmlContent]);
 
   // Auto-insert recognized text into editor
   const lastInsertedTextRef = useRef('');
@@ -338,9 +304,6 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
                 color={isListening ? '#FF3B30' : theme.text}
               />
             </IconButton>
-            <IconButton onPress={handleExport} accessibilityLabel="Export note">
-              <Icon name="upload" size={24} color={theme.text} />
-            </IconButton>
           </S.HeaderRight>
         </S.Header>
 
@@ -369,14 +332,6 @@ const CreateNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           />
         )}
       </S.Container>
-
-      {noteForExport && (
-        <ExportModal
-          visible={showExportModal}
-          note={noteForExport}
-          onClose={() => setShowExportModal(false)}
-        />
-      )}
     </SafeAreaContainer>
   );
 };

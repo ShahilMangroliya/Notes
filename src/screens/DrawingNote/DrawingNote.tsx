@@ -6,7 +6,6 @@ import DrawingToolbar from '@/components/DrawingToolbar';
 import DrawingCanvas from '@/components/DrawingCanvas';
 import IconButton from '@/components/IconButton';
 import Icon from '@/components/Icon';
-import ExportModal from '@/components/ExportModal';
 import {createDrawingNote} from '@/util/NoteHelper';
 import {useAppDispatch} from '@/hooks/hooks';
 import {setCurrentNote} from '@/redux/notesSlice';
@@ -46,7 +45,6 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
   } = useDrawingEditor();
 
   const [title, setTitle] = useState('');
-  const [showExportModal, setShowExportModal] = useState(false);
   const canvasRef = useRef<View>(null);
 
   // Calculate responsive canvas size that fits the screen
@@ -109,20 +107,6 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
     );
   }, [clearCanvas]);
 
-  const handleExport = useCallback(async () => {
-    setShowExportModal(true);
-  }, []);
-
-  // Unused export format handler - kept for potential future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _handleExportFormat = useCallback(
-    async (_format: 'pdf' | 'text' | 'markdown' | 'image' | 'json') => {
-      // Function body removed as it's not currently used
-      // Export is handled by ExportModal component
-    },
-    [],
-  );
-
   if (!currentNote || noteType !== 'drawing') {
     return (
       <SafeAreaContainer>
@@ -145,12 +129,6 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
           </S.HeaderLeft>
           <S.HeaderRight>
             {isSaving && <S.SavingIndicator>Saving...</S.SavingIndicator>}
-            <IconButton
-              onPress={handleExport}
-              accessibilityLabel="Export drawing"
-            >
-              <Icon name="upload" size={24} color={theme.text} />
-            </IconButton>
           </S.HeaderRight>
         </S.Header>
 
@@ -189,13 +167,6 @@ const DrawingNote: React.FC<NoteEditorScreenProps> = ({navigation, route}) => {
         </S.ToolbarContainer>
       </S.Container>
 
-      {currentNote && (
-        <ExportModal
-          visible={showExportModal}
-          note={currentNote}
-          onClose={() => setShowExportModal(false)}
-        />
-      )}
     </SafeAreaContainer>
   );
 };
